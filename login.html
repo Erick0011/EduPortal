@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tela de Login - EduPortal</title>
+    <!-- Link para o Bootstrap -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+<body>
+    <!-- Tela de Login -->
+    <div class="d-flex justify-content-center align-items-center vh-100" style="background-color: #004A8D; position: relative;">
+        <!-- Card de login -->
+        <div class="card p-4 shadow position-relative" style="width: 100%; max-width: 400px; border-radius: 10px;">
+            <!-- Botão para voltar -->
+            <a href="index.html" class="btn-close position-absolute top-0 end-0 m-3" 
+               style="background-color: #f8f9fa; padding: 10px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid #004A8D; width: 40px; height: 40px;" 
+               aria-label="Voltar"></a>
+
+            <!-- Logo do EduPortal -->
+            <h2 class="text-center mb-4" style="color: #004A8D; font-family: 'Arial', sans-serif; font-weight: bold;">
+                Edu<span style="color: #FF7A00;">Portal</span>
+            </h2>
+            <form>
+                <!-- Campo de e-mail -->
+                <div class="mb-3">
+                    <label for="email" class="form-label">E-mail</label>
+                    <input type="email" class="form-control" id="email" placeholder="Digite seu e-mail" required>
+                </div>
+                <!-- Campo de senha -->
+                <div class="mb-3">
+                    <label for="password" class="form-label">Senha</label>
+                    <input type="password" class="form-control" id="password" placeholder="Digite sua senha" required>
+                </div>
+                <!-- Botão de login -->
+                <button type="submit" class="btn btn-primary w-100" style="background-color: #004A8D;">Entrar</button>
+                <!-- Link para recuperação de senha -->
+                <div class="text-center mt-3">
+                    <a href="#" class="text-decoration-none" style="color: #004A8D;">Esqueceu sua senha?</a>
+                </div>
+            </form>
+            <!-- Link para criar uma conta -->
+            <hr>
+            <div class="text-center">
+                <p class="mb-0">Não tem uma conta?</p>
+                <a href="criar-conta.html" class="text-decoration-none" style="color: #004A8D;">Criar uma conta</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Bootstrap -->
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+</body>
+</html>
