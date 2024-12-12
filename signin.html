@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criação de Conta - EduPortal</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container d-flex justify-content-center align-items-center vh-100">
+        <div class="card p-4 shadow-lg" style="width: 100%; max-width: 500px;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="text-center mb-4" style="color: #004A8D; font-family: 'Arial', sans-serif; font-weight: bold;">
+                    Edu<span style="color: #FF7A00;">Portal</span>
+                </h2>
+                <a href="index.html" class="btn btn-sm btn-outline-secondary">X</a>
+            </div>
+
+            <!-- Seção Atual -->
+            <div id="form-section">
+                <h5 class="mb-3" id="section-title">Informações Básicas</h5>
+                <div id="form-content">
+                    <!-- Primeira Seção: Informações Básicas -->
+                    <div id="basic-info" class="form-section">
+                        <div class="mb-3">
+                            <label for="nome" class="form-label">Nome completo</label>
+                            <input type="text" id="nome" class="form-control" placeholder="Digite seu nome completo">
+                        </div>
+                        <div class="mb-3">
+                            <label for="data-nascimento" class="form-label">Data de nascimento</label>
+                            <input type="date" id="data-nascimento" class="form-control" min="${new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]}" max="${new Date(new Date().setFullYear(new Date().getFullYear() - 14)).toISOString().split('T')[0]}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="numero-bilhete" class="form-label">Número do bilhete</label>
+                            <input type="text" id="numero-bilhete" class="form-control" placeholder="Digite o número do seu bilhete">
+                        </div>
+                        <div class="mb-3">
+                            <label for="genero" class="form-label">Gênero (opcional)</label>
+                            <select id="genero" class="form-select">
+                                <option value="">Selecione</option>
+                                <option value="masculino">Masculino</option>
+                                <option value="feminino">Feminino</option>
+                                <option value="outro">Outro</option>
+                                <option value="prefiro-nao-informar">Prefiro não informar</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">E-mail</label>
+                            <input type="email" id="email" class="form-control" placeholder="Digite seu e-mail">
+                        </div>
+                        <div class="mb-3">
+                            <label for="senha" class="form-label">Senha</label>
+                            <input type="password" id="senha" class="form-control" placeholder="Crie uma senha segura">
+                        </div>
+                    </div>
+
+                    <!-- Segunda Seção: Informações Acadêmicas -->
+                    <div id="academic-info" class="form-section d-none">
+                        <div class="mb-3">
+                            <label for="instituicao" class="form-label">Instituição atual</label>
+                            <input type="text" id="instituicao" class="form-control" placeholder="Digite o nome da sua instituição">
+                        </div>
+                        <div class="mb-3">
+                            <label for="ano-estudo" class="form-label">Ano ou nível de estudo</label>
+                            <input type="text" id="ano-estudo" class="form-control" placeholder="Ex.: 12º ano">
+                        </div>
+                        <div class="mb-3">
+                            <label for="area-interesse" class="form-label">Curso ou área de interesse</label>
+                            <input type="text" id="area-interesse" class="form-control" placeholder="Ex.: Engenharia, Ciências da Computação">
+                        </div>
+                        <div class="mb-3">
+                            <label for="turno" class="form-label">Turno preferido</label>
+                            <select id="turno" class="form-select">
+                                <option value="">Selecione</option>
+                                <option value="manha">Manhã</option>
+                                <option value="tarde">Tarde</option>
+                                <option value="noite">Noite</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Terceira Seção: Contato e Localização -->
+                    <div id="contact-info" class="form-section d-none">
+                        <div class="mb-3">
+                            <label for="telefone" class="form-label">Número de telefone</label>
+                            <input type="tel" id="telefone" class="form-control" placeholder="Digite seu número de telefone">
+                        </div>
+                        <div class="mb-3">
+                            <label for="cidade" class="form-label">Cidade</label>
+                            <input type="text" id="cidade" class="form-control" placeholder="Digite sua cidade">
+                        </div>
+                        <div class="mb-3">
+                            <label for="estado" class="form-label">Estado/Província</label>
+                            <input type="text" id="estado" class="form-control" placeholder="Digite seu estado/província">
+                        </div>
+                        <div class="mb-3">
+                            <label for="pais" class="form-label">País</label>
+                            <input type="text" id="pais" class="form-control" placeholder="Digite seu país">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botões de Navegação -->
+                <div class="d-flex justify-content-between">
+                    <button id="prev-button" class="btn btn-outline-secondary d-none">Voltar</button>
+                    <button id="next-button" class="btn btn-primary">Avançar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sections = ["basic-info", "academic-info", "contact-info"];
+        let currentSection = 0;
+
+        const updateSection = () => {
+            sections.forEach((id, index) => {
+                document.getElementById(id).classList.toggle("d-none", index !== currentSection);
+            });
+
+            document.getElementById("prev-button").classList.toggle("d-none", currentSection === 0);
+            document.getElementById("next-button").textContent = currentSection === sections.length - 1 ? "Concluir" : "Avançar";
+
+            const titles = ["Informações Básicas", "Informações Acadêmicas", "Contato e Localização"];
+            document.getElementById("section-title").textContent = titles[currentSection];
+        };
+
+        document.getElementById("prev-button").addEventListener("click", () => {
+            if (currentSection > 0) {
+                currentSection--;
+                updateSection();
+            }
+        });
+
+        document.getElementById("next-button").addEventListener("click", () => {
+            if (currentSection < sections.length - 1) {
+                currentSection++;
+                updateSection();
+            } else {
+                alert("Conta criada com sucesso!");
+            }
+        });
+
+        updateSection();
+    </script>
+    <script src="js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
