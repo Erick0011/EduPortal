@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Estudante</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Edu<span style="color: #FF7A00;">Portal</span></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="container mt-4 ">
+        <!-- Navegação por Tabs -->
+        <ul class="nav nav-tabs" id="tabMenu" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="inicio-tab" data-bs-toggle="tab" data-bs-target="#inicio" type="button" role="tab">Início</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="inscricoes-tab" data-bs-toggle="tab" data-bs-target="#inscricoes" type="button" role="tab">Inscrições</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="perfil-tab" data-bs-toggle="tab" data-bs-target="#perfil" type="button" role="tab">Meu Perfil</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="escolas-tab" data-bs-toggle="tab" data-bs-target="#escolas" type="button" role="tab">Escolas</button>
+            </li>
+        </ul>
+
+        <div class="tab-content mt-3">
+            <!-- Painel Inicial -->
+            <div class="tab-pane fade show active" id="inicio" role="tabpanel">
+                <h2 class="mb-3">Bem-vindo ao Painel do Estudante</h2>
+                <p>Explore as funcionalidades disponíveis para gerenciar suas inscrições e conhecer mais sobre as escolas.</p>
+            </div>
+
+            <!-- Seção de Inscrições -->
+            <div class="tab-pane fade" id="inscricoes" role="tabpanel">
+                <h3 class="mb-3">Minhas Inscrições</h3>
+                <table class="table table-bordered">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>Escola</th>
+                            <th>Status</th>
+                            <th>Data da Inscrição</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Escola A</td>
+                            <td>Pendente</td>
+                            <td>10/12/2024</td>
+                            <td><button class="btn btn-danger btn-sm">Cancelar</button></td>
+                        </tr>
+                        <tr>
+                            <td>Escola B</td>
+                            <td>Aprovada</td>
+                            <td>08/12/2024</td>
+                            <td>-</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="btn btn-primary">Nova Inscrição</button>
+            </div>
+
+            <!-- Perfil do Estudante -->
+            <div class="tab-pane fade" id="perfil" role="tabpanel">
+                <h3 class="mb-3">Meu Perfil</h3>
+                <form>
+                    <div class="mb-3">
+                        <label for="nome" class="form-label">Nome Completo</label>
+                        <input type="text" class="form-control" id="nome" value="Erick Santos">
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">E-mail</label>
+                        <input type="email" class="form-control" id="email" value="erick@email.com">
+                    </div>
+                    <div class="mb-3">
+                        <label for="senha" class="form-label">Senha</label>
+                        <input type="password" class="form-control" id="senha" placeholder="******">
+                    </div>
+                    <hr>
+                    <h4>Dados Acadêmicos</h4>
+                    <div class="mb-3">
+                        <label for="cursos-preferidos" class="form-label">Cursos Preferidos</label>
+                        <input type="text" class="form-control" id="cursos-preferidos" value="Técnico em Informática, Ciências Econômicas" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="media" class="form-label">Média Final</label>
+                        <input type="text" class="form-control" id="media" value="18/20" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ano" class="form-label">Ano de Conclusão</label>
+                        <input type="text" class="form-control" id="ano" value="2024" disabled>
+                    </div>
+                    <button type="submit" class="btn btn-success">Salvar Alterações</button>
+                </form>
+            </div>
+
+            <!-- Perfil das Escolas -->
+            <div class="tab-pane fade" id="escolas" role="tabpanel">
+                <h3 class="mb-3">Explorar Escolas</h3>
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <a href="escola-a.html" target="_blank"> <h5 class="card-title">Escola A</h5></a>
+                        <p class="card-text">Localização: Luanda</p>
+                        <p class="card-text">Cursos Disponíveis: Técnico em Informática, Gestão de Recursos Humanos</p>
+                        <button class="btn btn-primary btn-sm">Inscrever-se</button>
+                    </div>
+                </div>
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Escola B</h5>
+                        <p class="card-text">Localização: Benguela</p>
+                        <p class="card-text">Cursos Disponíveis: Ciências Econômicas e Jurídicas, Ciências Físicas e Biológicas</p>
+                        <button class="btn btn-primary btn-sm">Inscrever-se</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

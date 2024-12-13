@@ -67,8 +67,26 @@
                         </div>
                         <div class="mb-3">
                             <label for="area-interesse" class="form-label">Curso ou área de interesse</label>
-                            <input type="text" id="area-interesse" class="form-control" placeholder="Ex.: Engenharia, Ciências da Computação">
+                            <select id="area-interesse" class="form-select" aria-label="Selecione até três cursos">
+                                <option value="" disabled selected>Selecione um curso...</option>
+                                <option value="engenharia">Engenharia</option>
+                                <option value="ciencia_computacao">Ciências da Computação</option>
+                                <option value="medicina">Medicina</option>
+                                <option value="direito">Direito</option>
+                                <option value="administracao">Administração</option>
+                                <option value="arquitetura">Arquitetura</option>
+                                <option value="psicologia">Psicologia</option>
+                                <option value="economia">Economia</option>
+                                <option value="biotecnologia">Biotecnologia</option>
+                                <option value="matematica">Matemática</option>
+                            </select>
+                            <button type="button" class="btn btn-primary mt-2" id="add-course">Adicionar curso</button>
+                            <ul class="list-group mt-2" id="selected-courses">
+                                <!-- Cursos selecionados aparecerão aqui -->
+                            </ul>
+                            <small class="form-text text-muted">Escolha até três opções, do mais interessado ao menos interessado.</small>
                         </div>
+                        
                         <div class="mb-3">
                             <label for="turno" class="form-label">Turno preferido</label>
                             <select id="turno" class="form-select">
@@ -109,7 +127,40 @@
             </div>
         </div>
     </div>
-
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectElement = document.getElementById('area-interesse');
+            const addButton = document.getElementById('add-course');
+            const selectedCourses = document.getElementById('selected-courses');
+    
+            addButton.addEventListener('click', function() {
+                if (selectedCourses.children.length < 3) {
+                    const selectedOption = selectElement.options[selectElement.selectedIndex];
+                    if (selectedOption && selectedOption.value) {
+                        const listItem = document.createElement('li');
+                        listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+                        listItem.textContent = selectedOption.text;
+                        
+                        const removeButton = document.createElement('button');
+                        removeButton.className = 'btn btn-danger btn-sm';
+                        removeButton.textContent = 'Remover';
+                        removeButton.addEventListener('click', function() {
+                            listItem.remove();
+                        });
+    
+                        listItem.appendChild(removeButton);
+                        selectedCourses.appendChild(listItem);
+    
+                        // Remove the option from the dropdown
+                        selectElement.remove(selectElement.selectedIndex);
+                    }
+                } else {
+                    alert('Você pode selecionar no máximo três cursos.');
+                }
+            });
+        });
+    </script>
+    
     <script>
         const sections = ["basic-info", "academic-info", "contact-info"];
         let currentSection = 0;
