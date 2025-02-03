@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Link para o Bootstrap -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+
+    <title>EduPortal.ao</title>
+</head>
+<body>
+    <!-- Nav Bar -->
+    <nav class="navbar navbar-expand-lg" style="background-color: #004A8D;">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#">Edu<span style="color: #FF7A00;">Portal</span></a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="#">Início</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="#Guia">Guia</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="#Instituições">Instituições</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="#Contato">Contato</a>
+              </li>
+            </ul>
+            <form class="d-flex" role="button">
+                <a href="{{ url_for('login') }}"><button type="button" class="btn btn-outline-info" style="color: black;">Entrar na conta</button></a>
+                <a href="{{ url_for('cadastro') }}"><button type="button" class="btn btn-outline-info" style="color: black;"> Criar uma conta</button></a>
+            </form>
+          </div>
+        </div>
+    </nav>
+    <!-- Hero section -->
+    <div class="bg-custom" style="background-image: url('{{ url_for('static', filename='images/index/home_page_hero_optimized.jpg') }}'); background-size: cover; background-position: center; background-attachment: fixed; height: 100vh; display: flex; justify-content: flex-start; align-items: center;">
+        <div class="col-md-6 text-start" style="padding-left: 30px;">
+            <div class="row">
+                <h1 style="font-size: 3rem; color: #005AA7; ">Seu futuro começa aqui</h1>
+            </div>
+            <div class="row">
+                <p style="font-size: 1.2rem; color: black;"> Nossa plataforma oferece as ferramentas essenciais para você planejar e conquistar seus objetivos educacionais.</p>
+            </div>
+            <div class="row">
+                <a href="{{ url_for('cadastro') }}"><button type="button" class="btn btn-outline-info" style="color: black;"> Criar uma conta</button></a>
+            </div>
+        </div>
+    </div>
+    
+    <section class="planeje-futuro py-5">
+        <div class="container text-center">
+            <!-- Título da seção-->
+            <h2 class="mb-4" style="background-color: #005AA7; color: white; padding: 15px;">Planeje o seu futuro</h2>
+            <p class="lead mb-5">
+                Nosso objetivo é simplificar o processo de inscrição e oferecer as melhores ferramentas para o seu sucesso. Planeje seu futuro acadêmico de forma eficiente e fácil.
+            </p>
+            
+            <!-- Cards com 3 colunas -->
+            <div class="row">
+                <!-- Card 1 -->
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100" style="border: 2px solid #005AA7;">      
+                        <div class="card-body">
+                            <img src="{{ url_for('static', filename='images/index/head-green.png') }}" class="card-img-top" alt="Escolha a escola certa" style="width: 100%; height: auto; max-width: 80px; max-height: 80px;">
+                            <h5 class="card-title" style="color: #005AA7;">Escolha a escola certa</h5>
+                            <p class="card-text">Compare diferentes opções de escolas, cursos e turnos para encontrar a melhor escolha para o seu futuro acadêmico.</p>
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- Card 2 -->
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100" style="border: 2px solid #005AA7;">
+                        <div class="card-body">
+                            <img src="{{ url_for('static', filename='images/index/path2-blue.png') }}" class="card-img-top" alt="Escolha a escola certa" style="width: 100%; height: auto; max-width: 80px; max-height: 80px;">
+                            <h5 class="card-title" style="color: #005AA7;">Inscrição simplificada</h5>
+                            <p class="card-text">Preencha um único formulário e se inscreva em várias escolas de maneira prática e rápida.</p>
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- Card 3 -->
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100" style="border: 2px solid #005AA7;">
+                        <div class="card-body">
+                            <img src="{{ url_for('static', filename='images/index/icon-book-sun.svg') }}" class="card-img-top" alt="Escolha a escola certa" style="width: 100%; height: auto; max-width: 80px; max-height: 80px;">
+                            <h5 class="card-title" style="color: #005AA7;">Acompanhamento do processo</h5>
+                            <p class="card-text">Receba notificações sobre o andamento da sua inscrição e garanta que nenhum passo seja perdido.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Guia -->
+    <section id="Guia" class="inscricao-explicacao py-5 p-3 mb-2 bg-info-subtle text-info-emphasis">
+        <div class="container text-center">
+            <!-- Título da seção -->
+            <h2 class="mb-4">Entenda o Processo de Inscrição</h2>
+            <p class="lead mb-5">
+                O processo de inscrição em escolas foi simplificado para garantir que você possa se inscrever de forma prática e rápida. Preencha um único formulário e escolha as escolas de sua preferência. Para mais detalhes sobre cada etapa do processo, acesse o link abaixo.
+            </p>
+            
+            <!-- Link para mais detalhes sobre o processo -->
+            <a href="blog-guia.html" class="btn btn-primary" >Saiba Mais sobre a Inscrição</a>
+        </div>
+    </section> 
+
+    <!-- Instituições --> 
+    <section id="Instituições" class="instituicoes-participantes py-5 text-center">
+        <div class="container">
+            <h2 class="mb-4">Instituições Participantes</h2>
+            <p class="lead mb-5">
+                Se você representa uma instituição educacional e deseja fazer parte da nossa plataforma de inscrições, estamos aqui para ajudá-lo a alcançar um público mais amplo de candidatos. Ao se cadastrar, sua instituição terá visibilidade nas inscrições, facilitando o processo tanto para você quanto para os estudantes.
+            </p>
+            <div class="row justify-content-center">
+                <div class="col-md-4">
+                    <!-- Imagem quadrada representando a instituição -->
+                    <img src="{{ url_for('static', filename='images/index/icon-institution.svg') }}" class="card-img-top" alt="Escolha a escola certa" style="width: 100%; height: auto; max-width: 80px; max-height: 80px;">
+
+                </div>
+            </div>
+            <p class="mb-5">
+                Faça parte da nossa plataforma e ofereça uma experiência de inscrição mais eficiente e transparente para todos. Ao aderir, você poderá gerenciar as inscrições de forma simples e intuitiva.
+            </p>
+            <a href="blog-instituicoes.html" class="btn btn-primary">Cadastre sua instituição</a>
+        </div>
+    </section>
+
+    <!-- Contato --> 
+    <section id="Contato" class="contato-conosco py-5 text-center p-3 mb-2 bg-info-subtle text-info-emphasis">
+        <div class="container">
+            <h2 class="mb-4">Contato Conosco</h2>
+            <p class="lead mb-5">
+                Tem alguma dúvida ou quer mais informações sobre o processo de inscrição? Estamos aqui para ajudar! Preencha o formulário abaixo ou entre em contato diretamente conosco.
+            </p>
+            
+            <!-- Formulário de Contato -->
+            <form action="enviar_contato.php" method="POST">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <input type="text" class="form-control" placeholder="Seu Nome" name="nome" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <input type="email" class="form-control" placeholder="Seu E-mail" name="email" required>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <textarea class="form-control" placeholder="Sua Mensagem" name="mensagem" rows="4" required></textarea>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">Enviar Mensagem</button>
+                    </div>
+                </div>
+            </form>
+    
+            <!-- Informações de Contato -->
+            <div class="mt-5">
+                <h4>Ou entre em contato diretamente:</h4>
+                <p><strong>Email:</strong> contato@eduportal.com</p>
+                <p><strong>Telefone:</strong> 244 999 999 999</p>
+                <p><strong>Endereço:</strong> Rua 123, Luanda, Angola</p>
+            </div>
+        </div>
+    </section>
+   
+<!-- Footer -->
+<footer class="text-white py-4" style="background-color: #004A8D;">
+    <div class="container">
+        <div class="row">
+            <!-- Seção de Informações -->
+            <div class="col-md-4 mb-3">
+                <h5>Sobre Nós</h5>
+                <p>Oferecemos uma plataforma simples e eficiente para ajudar estudantes a se inscreverem em escolas de sua escolha.</p>
+            </div>
+            
+            <!-- Seção de Links -->
+            <div class="col-md-4 mb-3">
+                <h5>Links Rápidos</h5>
+                <ul class="list-unstyled">
+                    <li><a href="#" class="text-white">Início</a></li>
+                    <li><a href="#Instituições" class="text-white">Instituições</a></li>
+                    <li><a href="#Guia" class="text-white">Guia</a></li>
+                    <li><a href="#Contato" class="text-white">Contato</a></li>
+                </ul>
+            </div>
+            
+            <!-- Seção de Redes Sociais -->
+            <div class="col-md-4 mb-3">
+                <h5>Redes Sociais</h5>
+                <a href="#" class="text-white me-3"><i class="fab fa-facebook"></i> Facebook</a><br>
+                <a href="#" class="text-white me-3"><i class="fab fa-twitter"></i> Twitter</a><br>
+                <a href="#" class="text-white me-3"><i class="fab fa-instagram"></i> Instagram</a>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col text-center">
+                <p>&copy; 2024 EduPortal. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   <!-- Script Bootstrap -->
+   <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+   <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+   <script src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
+   <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+
+</body>
+</html>

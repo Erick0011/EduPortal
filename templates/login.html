@@ -1,0 +1,32 @@
+{% extends 'base-card.html' %}
+
+{% block head %}
+<title>Login - EduPortal</title>
+{% endblock %}
+
+{% block body %}
+    <form method="POST" action="/login">
+        <!-- Campo de e-mail -->
+        <div class="mb-3">
+            <label for="email" class="form-label">E-mail</label>
+            <input type="email" class="form-control" id="email" name="email" placeholder="Digite seu e-mail" required>
+        </div>
+        <!-- Campo de senha -->
+        <div class="mb-3">
+            <label for="password" class="form-label">Senha</label>
+            <input type="password" class="form-control" id="password" name="password" placeholder="Digite sua senha" required>
+        </div>
+        <!-- Botão de login -->
+        <button type="submit" class="btn btn-primary w-100" style="background-color: #004A8D;">Entrar</button>
+        <!-- Link para recuperação de senha -->
+        <div class="text-center mt-3">
+            <a href="#" class="text-decoration-none" style="color: #004A8D;">Esqueceu sua senha?</a>
+        </div>
+    </form>
+    <!-- Link para criar uma conta -->
+    <hr>
+    <div class="text-center">
+        <p class="mb-0">Não tem uma conta?</p>
+        <a href="{{ url_for('cadastro') }}" class="text-decoration-none" style="color: #004A8D;">Criar uma conta</a>
+    </div>
+{% endblock %}

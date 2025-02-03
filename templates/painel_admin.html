@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <style>
+        body {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #007bff;
+            color: white;
+        }
+
+        .sidebar .nav-link {
+            color: white;
+        }
+
+        .sidebar .nav-link.active,
+        .sidebar .nav-link:hover {
+            background-color: #ffa500;
+            color: white;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+
+        .sidebar-title {
+            font-size: 1.5rem;
+            padding: 15px;
+            background-color: #0056b3;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar d-flex flex-column">
+        <div class="sidebar-title">Admin Dashboard</div>
+        <nav class="nav flex-column">
+            <a class="nav-link active" href="#dashboard" data-bs-toggle="tab">Dashboard</a>
+            <a class="nav-link" href="#alunos" data-bs-toggle="tab">Alunos</a>
+            <a class="nav-link" href="#instituicoes" data-bs-toggle="tab">Instituições</a>
+            <a class="nav-link" href="#blog" data-bs-toggle="tab">Blog</a>
+            <a class="nav-link" href="#criar-instituicoes" data-bs-toggle="tab">Criar Instituições</a>
+            <a class="nav-link" href="#mensagens" data-bs-toggle="tab">Mensagens</a>
+            <form action="/logout" method="POST" style="margin: 0;">
+                <button type="submit" class="nav-link btn btn-link text-start" style="color: red; text-decoration: none; padding: 15px;">Sair</button>
+            </form> 
+        </nav>
+    </div>
+
+    <div class="content tab-content">
+        <!-- Tab Dashboard -->
+        <div class="tab-pane fade show active" id="dashboard">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3>Bem-vindo novamente, {{ admin.nome_admin }}!</h3>
+                <div id="datetime" class="fw-bold"><p>{{ agora.strftime('%d/%m/%Y') }}</p></div>
+            </div>
+
+            <div class="row g-3">
+                <!-- Estatísticas: Total de Alunos, Instituições, e Mensagens Não Lidas -->
+                <div class="col-md-4">
+                    <div class="card text-white bg-info">
+                        <div class="card-body">
+                            <h5 class="card-title">Total de Alunos</h5>
+                            <p class="card-text" id="total-alunos">{{ total_alunos }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-warning">
+                        <div class="card-body">
+                            <h5 class="card-title">Total de Instituições</h5>
+                            <p class="card-text" id="total-instituicoes">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-success">
+                        <div class="card-body">
+                            <h5 class="card-title">Mensagens Não Lidas</h5>
+                            <p class="card-text" id="total-mensagens">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alunos Recentes -->
+            <div class="row g-3 mt-3"> <!-- Adicionando espaçamento entre as rows -->
+                <div class="col-md-12">
+                    <div class="card bg-white p-4 rounded-xl shadow-md">
+                        <h5 class="card-title">Alunos Recentes</h5>
+                        <ul class="list-unstyled">
+                            {% for aluno in alunos_recentes %}
+                                <li class="mb-2">
+                                    <strong>{{ aluno.nome_completo }}</strong><br>
+                                    <small>{{ aluno.created_at.strftime('%d/%m/%Y') }}</small>
+                                </li>
+                            {% endfor %}
+                            {% if alunos_recentes|length == 0 %}
+                                <li class="text-gray-500">Nenhum aluno recente encontrado.</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logs do Sistema -->
+            <div class="row g-3 mt-3"> <!-- Adicionando espaçamento entre as rows -->
+                <div class="col-md-12">
+                    <div class="card bg-white p-4 rounded-xl shadow-md">
+                        <h5 class="card-title text-orange-500">Logs do Sistema</h5>
+                        <div class="h-64 overflow-y-scroll border-t pt-2">
+                            {% for log in logs_sistema %}
+                                <p class="text-sm text-gray-700">
+                                    <strong>{{ log.data_hora.strftime('%d/%m/%Y %H:%M:%S') }}</strong> - 
+                                    {{ log.mensagem }}<br>
+                                    <small>Usuário: {{ log.tipo_usuario }} (ID: {{ log.usuario_id }})</small>
+                                </p>
+                            {% endfor %}
+                            {% if logs_sistema|length == 0 %}
+                                <p class="text-gray-500">Nenhum log registrado.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Alunos -->
+        <div class="tab-pane fade" id="alunos">
+            <h1>Alunos</h1>
+            <p>Gestão de alunos.</p>
+        
+            <!-- Campo de Pesquisa -->
+            <div class="mb-4">
+                <form method="GET" action="{{ url_for('painel_admin') }}">
+                    <input type="text" class="form-control" name="search" placeholder="Pesquisar por ID, Nome ou BI" value="{{ request.args.get('search', '') }}">
+                </form>
+            </div>
+        
+            <!-- Tabela de Alunos -->
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Nome</th>
+                        <th scope="col">BI</th>
+                        <th scope="col">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for aluno in alunos %}
+                        <tr>
+                            <td>{{ aluno.id }}</td>
+                            <td>{{ aluno.nome_completo }}</td>
+                            <td>{{ aluno.numero_bilhete }}</td>
+                            <td>
+                                <!-- Botão de Visualizar (abre o modal) -->
+                                <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#visualizarModal{{ aluno.id }}">Visualizar</button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        
+            <!-- Modal de Visualização e Edição -->
+            {% for aluno in alunos %}
+                <div class="modal fade" id="visualizarModal{{ aluno.id }}" tabindex="-1" aria-labelledby="visualizarModalLabel{{ aluno.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="visualizarModalLabel{{ aluno.id }}">Detalhes do Aluno: {{ aluno.nome_completo }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="{{ url_for('atualizar_aluno', aluno_id=aluno.id) }}" method="POST">
+                                    <div class="mb-3">
+                                        <label for="nome_completo" class="form-label">Nome Completo</label>
+                                        <input type="text" class="form-control" name="nome_completo" value="{{ aluno.nome_completo }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="data_nascimento" class="form-label">Data de Nascimento</label>
+                                        <input type="date" class="form-control" name="data_nascimento" value="{{ aluno.data_nascimento }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="numero_bilhete" class="form-label">Número do Bilhete</label>
+                                        <input type="text" class="form-control" name="numero_bilhete" value="{{ aluno.numero_bilhete }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="genero" class="form-label">Gênero</label>
+                                        <select class="form-control" name="genero">
+                                            <option value="Masculino" {% if aluno.genero == 'Masculino' %}selected{% endif %}>Masculino</option>
+                                            <option value="Feminino" {% if aluno.genero == 'Feminino' %}selected{% endif %}>Feminino</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">Email</label>
+                                        <input type="email" class="form-control" name="email" value="{{ aluno.email }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="senha" class="form-label">Senha</label>
+                                        <input type="password" class="form-control" name="senha" placeholder="Digite uma nova senha, se quiser alterar">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="instituicao_9_classe" class="form-label">Instituição 9ª Classe</label>
+                                        <input type="text" class="form-control" name="instituicao_9_classe" value="{{ aluno.instituicao_9_classe }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="ano_conclusao" class="form-label">Ano de Conclusão</label>
+                                        <input type="text" class="form-control" name="ano_conclusao" value="{{ aluno.ano_conclusao }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="media_final" class="form-label">Média Final</label>
+                                        <input type="text" class="form-control" name="media_final" value="{{ aluno.media_final }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="turno_preferido" class="form-label">Turno Preferido</label>
+                                        <input type="text" class="form-control" name="turno_preferido" value="{{ aluno.turno_preferido }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="telefone" class="form-label">Telefone</label>
+                                        <input type="text" class="form-control" name="telefone" value="{{ aluno.telefone }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="municipio" class="form-label">Município</label>
+                                        <input type="text" class="form-control" name="municipio" value="{{ aluno.municipio }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="bairro" class="form-label">Bairro</label>
+                                        <input type="text" class="form-control" name="bairro" value="{{ aluno.bairro }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="provincia" class="form-label">Província</label>
+                                        <input type="text" class="form-control" name="provincia" value="{{ aluno.provincia }}">
+                                    </div>
+                                    <button type="submit" class="btn btn-success">Salvar Alterações</button>
+                                </form>
+                                
+                                <a href="{{ url_for('deletar_aluno', aluno_id=aluno.id) }}" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja excluir este aluno?')">Excluir</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+
+        <div class="tab-pane fade" id="instituicoes">
+            <h1>Instituições</h1>
+            <p>Gestão de instituições.</p>
+        </div>
+        <div class="tab-pane fade" id="blog">
+            <h1>Blog</h1>
+            <p>Gerenciamento de publicações do blog.</p>
+        </div>
+        <div class="tab-pane fade" id="criar-instituicoes">
+            <h1>Criar Instituições</h1>
+            <p>Formulário para cadastrar novas instituições.</p>
+        </div>
+        <div class="tab-pane fade" id="mensagens">
+            <h1>Mensagens</h1>
+            <p>Visualização e resposta de mensagens.</p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+</body>
+
+</html>

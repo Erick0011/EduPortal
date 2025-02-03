@@ -1,0 +1,143 @@
+{% extends 'base-card.html' %}
+
+{% block head %}
+    <title>Cadastro - EduPortal</title>
+
+    <style>
+        /* Define uma altura máxima para o formulário e habilita a barra de rolagem */
+        .form-container {
+            max-height: 80vh; /* 80% da altura da janela de visualização */
+            overflow-y: auto; /* Habilita a rolagem vertical */
+            padding: 1rem;
+            border: 1px solid #ccc; /* Opcional: Adiciona uma borda para destaque */
+            border-radius: 8px; /* Deixa as bordas arredondadas */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra para destaque */
+        }
+        .text-danger {
+            color: red;
+            font-weight: bold;
+        }
+                                              
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="form-container">
+    <form action="{{ url_for('cadastro') }}" method="POST">
+        <!-- Seção 1: Informações Básicas -->
+        <h4>Seção 1: Informações Básicas</h4>
+        <div class="mb-3">
+            <label for="nomeCompleto" class="form-label">Nome Completo</label>
+            <input type="text" class="form-control" id="nomeCompleto" name="nomeCompleto" placeholder="Seu nome completo" pattern="[A-Za-zÀ-ÿ\s]+" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="dataNascimento" class="form-label">Data de Nascimento</label>
+            <input type="date" class="form-control" id="dataNascimento" name="dataNascimento" min="1938-01-01" max="2012-12-31" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="numeroBilhete" class="form-label">Número do Bilhete</label>
+            <input type="text" class="form-control" id="numeroBilhete" name="numeroBilhete" pattern="\d{9}[A-Za-z]{2}\d{3}" placeholder="Exemplo: 123456789AB123" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="genero" class="form-label">Gênero</label>
+            <select class="form-select" id="genero" name="genero" required>
+                <option value="masculino">Masculino</option>
+                <option value="feminino">Feminino</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="email" class="form-label">E-mail</label>
+            <input type="email" class="form-control" id="email" name="email" placeholder="Seu e-mail" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="senha" class="form-label">Senha</label>
+            <input type="password" class="form-control" id="senha" name="senha" placeholder="Crie uma senha" required>
+        </div>
+
+        <!-- Seção 2: Informações Acadêmicas -->
+        <h4>Seção 2: Informações Acadêmicas</h4>
+        <div class="mb-3">
+            <label for="instituicao9" class="form-label">Instituição que Concluiu a 9ª Classe</label>
+            <input type="text" class="form-control" id="instituicao9" name="instituicao9" placeholder="Nome da instituição" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="anoConclusao" class="form-label">Ano de Conclusão</label>
+            <input type="number" class="form-control" id="anoConclusao" name="anoConclusao" min="2000" max="2025" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="mediaFinal" class="form-label">Média Final</label>
+            <input type="number" class="form-control" id="mediaFinal" name="mediaFinal" min="0" max="20" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="turno" class="form-label">Turno Preferido</label>
+            <select class="form-select" id="turno" name="turno" required>
+                <option value="manha">Manhã</option>
+                <option value="tarde">Tarde</option>
+                <option value="noite">Noite</option>
+            </select>
+        </div>
+
+        <!-- Seção 3: Contato e Localização -->
+        <h4>Seção 3: Contato e Localização</h4>
+        <div class="mb-3">
+            <label for="telefone" class="form-label">Número de Telefone (+244)</label>
+            <input type="text" class="form-control" id="telefone" name="telefone" placeholder="9XX XXX XXX" pattern="9[1-9][0-9]{7}" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="municipio" class="form-label">Município</label>
+            <input type="text" class="form-control" id="municipio" name="municipio" placeholder="Seu município" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="bairro" class="form-label">Bairro</label>
+            <input type="text" class="form-control" id="bairro" name="bairro" placeholder="Seu bairro" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="provincia" class="form-label">Província</label>
+            <select class="form-select" id="provincia" name="provincia" required>
+                <!-- Províncias de Angola -->
+                
+                <option value="bengo">Bengo</option>
+                <option value="benguela">Benguela</option>
+                <option value="bie">Bié</option>
+                <option value="cabinda">Cabinda</option>
+                <option value="cuando">Cuando</option>
+                <option value="cuanza-norte">Cuanza Norte</option>
+                <option value="cuanza-sul">Cuanza Sul</option>
+                <option value="cubango">Cubango</option>
+                <option value="cunene">Cunene</option>
+                <option value="huambo">Huambo</option>
+                <option value="huila">Huila</option>
+                <option value="icole-bengo">Icole Bengo</option>
+                <option value="luanda">Luanda</option>
+                <option value="lunda-sul">Lunda Sul</option>
+                <option value="lunda-norte">Lunda Norte</option>
+                <option value="malanje">Malanje</option>
+                <option value="moxico">Moxico</option>
+                <option value="moxico-leste">Moxico Leste</option>
+                <option value="namibe">Namibe</option>
+                <option value="uige">Uíge</option>
+                <option value="zaire">Zaire</option>
+            </select>
+        </div>
+
+        <!-- Botão de Envio -->
+        <button type="submit" class="btn btn-primary w-100">Criar Conta</button>
+    </form>
+
+    <!-- Aviso em vermelho -->
+    <p class="text-danger mt-3">
+        <strong>Atenção:</strong> Todas as informações fornecidas devem ser verdadeiras e verificáveis. Caso sejam identificadas informações falsas, sua inscrição poderá ser cancelada sem aviso prévio.
+    </p>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base-card.html" %}
+
+{% block head %}
+<title>Erro no Upload - EduPortal</title>
+{% endblock %}
+
+{% block body %}
+<div class="text-center">
+    <!-- Ícone de alerta -->
+    <div class="mb-3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="#FF7A00" class="bi bi-exclamation-circle" viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16z"/>
+            <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zm.93-7.481-.082.38-.38 2.285c-.07.436.04.723.288.723.246 0 .355-.287.288-.723L8.22 3.9l-.082-.38a.25.25 0 0 0-.494 0z"/>
+        </svg>
+    </div>
+
+    <!-- Mensagem de erro -->
+    <h5 class="text-danger mb-3" style="font-family: 'Arial', sans-serif; font-weight: bold;">
+        Erro no Upload
+    </h5>
+    <p class="text-muted mb-4" style="font-size: 18px;">
+        {{ mensagem }}
+    </p>
+
+    <!-- Botão para tentar novamente -->
+    <a href="{{ url_for('upload', user_id=user_id) }}" class="btn btn-primary" style="background-color: #004A8D; border-color: #004A8D;">
+        Tentar Novamente
+    </a>
+</div>
+{% endblock %}
