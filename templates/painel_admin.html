@@ -187,15 +187,15 @@
                                 <form action="{{ url_for('atualizar_aluno', aluno_id=aluno.id) }}" method="POST">
                                     <div class="mb-3">
                                         <label for="nome_completo" class="form-label">Nome Completo</label>
-                                        <input type="text" class="form-control" name="nome_completo" value="{{ aluno.nome_completo }}">
+                                        <input type="text" class="form-control" name="nome_completo" value="{{ aluno.nome_completo }}"  pattern="[A-Za-zÀ-ÿ\s]+">
                                     </div>
                                     <div class="mb-3">
                                         <label for="data_nascimento" class="form-label">Data de Nascimento</label>
-                                        <input type="date" class="form-control" name="data_nascimento" value="{{ aluno.data_nascimento }}">
+                                        <input type="date" class="form-control" name="data_nascimento" value="{{ aluno.data_nascimento }}" min="1938-01-01" max="2012-12-31">
                                     </div>
                                     <div class="mb-3">
                                         <label for="numero_bilhete" class="form-label">Número do Bilhete</label>
-                                        <input type="text" class="form-control" name="numero_bilhete" value="{{ aluno.numero_bilhete }}">
+                                        <input type="text" class="form-control" name="numero_bilhete" value="{{ aluno.numero_bilhete }}" pattern="\d{9}[A-Za-z]{2}\d{3}">
                                     </div>
                                     <div class="mb-3">
                                         <label for="genero" class="form-label">Gênero</label>
@@ -218,19 +218,23 @@
                                     </div>
                                     <div class="mb-3">
                                         <label for="ano_conclusao" class="form-label">Ano de Conclusão</label>
-                                        <input type="text" class="form-control" name="ano_conclusao" value="{{ aluno.ano_conclusao }}">
+                                        <input type="text" class="form-control" name="ano_conclusao" value="{{ aluno.ano_conclusao }}" min="2000" max="2025">
                                     </div>
                                     <div class="mb-3">
                                         <label for="media_final" class="form-label">Média Final</label>
-                                        <input type="text" class="form-control" name="media_final" value="{{ aluno.media_final }}">
+                                        <input type="text" class="form-control" name="media_final" value="{{ aluno.media_final }}" min="0" max="20">
                                     </div>
                                     <div class="mb-3">
                                         <label for="turno_preferido" class="form-label">Turno Preferido</label>
-                                        <input type="text" class="form-control" name="turno_preferido" value="{{ aluno.turno_preferido }}">
+                                        <select class="form-select" id="turno_preferido" name="turno_preferido" required>
+                                            <option value="manha" {% if aluno.turno == 'manha' %}selected{% endif %}>Manhã</option>
+                                            <option value="tarde" {% if aluno.turno == 'tarde' %}selected{% endif %}>Tarde</option>
+                                            <option value="noite" {% if aluno.turno == 'noite' %}selected{% endif %}>Noite</option>
+                                        </select>
                                     </div>
                                     <div class="mb-3">
                                         <label for="telefone" class="form-label">Telefone</label>
-                                        <input type="text" class="form-control" name="telefone" value="{{ aluno.telefone }}">
+                                        <input type="text" class="form-control" name="telefone" value="{{ aluno.telefone }}" pattern="9[1-9][0-9]{7}">
                                     </div>
                                     <div class="mb-3">
                                         <label for="municipio" class="form-label">Município</label>
@@ -242,7 +246,31 @@
                                     </div>
                                     <div class="mb-3">
                                         <label for="provincia" class="form-label">Província</label>
-                                        <input type="text" class="form-control" name="provincia" value="{{ aluno.provincia }}">
+                                        <select class="form-select" id="provincia" name="provincia" required>
+                                            <option value="bengo" {% if aluno.provincia == 'bengo' %}selected{% endif %}>Bengo</option>
+                                            <option value="benguela" {% if aluno.provincia == 'benguela' %}selected{% endif %}>Benguela</option>
+                                            <option value="bie" {% if aluno.provincia == 'bie' %}selected{% endif %}>Bié</option>
+                                            <option value="cabinda" {% if aluno.provincia == 'cabinda' %}selected{% endif %}>Cabinda</option>
+                                            <option value="cuando" {% if aluno.provincia == 'cuando' %}selected{% endif %}>Cuando</option>
+                                            <option value="cuanza-norte" {% if aluno.provincia == 'cuanza-norte' %}selected{% endif %}>Cuanza Norte</option>
+                                            <option value="cuanza-sul" {% if aluno.provincia == 'cuanza-sul' %}selected{% endif %}>Cuanza Sul</option>
+                                            <option value="cubango" {% if aluno.provincia == 'cubango' %}selected{% endif %}>Cubango</option>
+                                            <option value="cunene" {% if aluno.provincia == 'cunene' %}selected{% endif %}>Cunene</option>
+                                            <option value="huambo" {% if aluno.provincia == 'huambo' %}selected{% endif %}>Huambo</option>
+                                            <option value="huila" {% if aluno.provincia == 'huila' %}selected{% endif %}>Huila</option>
+                                            <option value="icole-bengo" {% if aluno.provincia == 'icole-bengo' %}selected{% endif %}>Icole Bengo</option>
+                                            <option value="luanda" {% if aluno.provincia == 'luanda' %}selected{% endif %}>Luanda</option>
+                                            <option value="lunda-sul" {% if aluno.provincia == 'lunda-sul' %}selected{% endif %}>Lunda Sul</option>
+                                            <option value="lunda-norte" {% if aluno.provincia == 'lunda-norte' %}selected{% endif %}>Lunda Norte</option>
+                                            <option value="malanje" {% if aluno.provincia == 'malanje' %}selected{% endif %}>Malanje</option>
+                                            <option value="moxico" {% if aluno.provincia == 'moxico' %}selected{% endif %}>Moxico</option>
+                                            <option value="moxico-leste" {% if aluno.provincia == 'moxico-leste' %}selected{% endif %}>Moxico Leste</option>
+                                            <option value="namibe" {% if aluno.provincia == 'namibe' %}selected{% endif %}>Namibe</option>
+                                            <option value="uige" {% if aluno.provincia == 'uige' %}selected{% endif %}>Uíge</option>
+                                            <option value="zaire" {% if aluno.provincia == 'zaire' %}selected{% endif %}>Zaire</option>
+                                        </select>
+                                        
+                                        
                                     </div>
                                     <button type="submit" class="btn btn-success">Salvar Alterações</button>
                                 </form>
