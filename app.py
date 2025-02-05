@@ -68,6 +68,51 @@ class Instituicao(UserMixin, db.Model):
     nome_instituicao = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
     tipo = db.Column(db.String(50), default="instituicao", nullable=False)
+    endereco = db.Column(db.String(255), nullable=True)
+    cidade = db.Column(db.String(100), nullable=True)
+    provincia = db.Column(db.String(100), nullable=True)
+    codigo_postal = db.Column(db.String(20), nullable=True)
+    telefone = db.Column(db.String(20), nullable=True)
+    descricao = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(50), default="ativo", nullable=False)
+    created_at = db.Column(
+        db.DateTime, default=datetime.utcnow, nullable=False)
+    data_atualizacao = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Campos adicionais para curso e número de vagas
+    curso = db.Column(db.String(255), nullable=True)  # Nome do curso oferecido
+    # Número de vagas para o curso
+    numero_vagas = db.Column(db.Integer, nullable=True)
+
+    # Relacionamento com a tabela Funcionario
+    funcionarios = db.relationship(
+        'Funcionario', backref='instituicao', lazy=True)
+
+    def __repr__(self):
+        return f'<Instituicao {self.nome_instituicao}>'
+
+
+class Funcionario(db.Model):
+    __tablename__ = 'funcionario'
+    id = db.Column(db.Integer, primary_key=True)
+    nome_completo = db.Column(db.String(255), nullable=False)
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    senha = db.Column(db.String(256), nullable=False)
+    tipo = db.Column(db.String(50), default="instituicao", nullable=False)
+    # Cargo do funcionário
+    permissao = db.Column(db.String(100), nullable=False)
+    telefone = db.Column(db.String(20), nullable=True)
+    created_at = db.Column(
+        db.DateTime, default=datetime.utcnow, nullable=False)
+
+    # Chave estrangeira para o relacionamento com a Instituicao
+    instituicao_id = db.Column(db.Integer, db.ForeignKey(
+        'instituicao.id'), nullable=False)
+
+    def __repr__(self):
+        return f'<Funcionario {self.nome} - {self.cargo}>'
+
 
 # Admin
 
@@ -113,7 +158,7 @@ class Log(db.Model):
 # funcao add log
 
 
-def adicionar_log(mensagem, tipo='informação', usuario=None, tipo_usuario='aluno'):
+def adicionar_log(mensagem, tipo='informação', usuario=None, tipo_usuario='desconecido'):
     novo_log = Log(mensagem=mensagem, tipo=tipo, tipo_usuario=tipo_usuario)
 
     if usuario:
@@ -144,6 +189,9 @@ def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if current_user.tipo != 'admin':
+            flash(
+                {'titulo': 'Acesso negado!',
+                 'corpo': 'Você não tem permissão para acessar esta página.'})
             return redirect(url_for('index'))  # Redireciona se não for admin
         return f(*args, **kwargs)
     return decorated_function
@@ -156,7 +204,8 @@ def instituicao_required(f):
     def decorated_function(*args, **kwargs):
         if session.get("user_type") != "instituicao":
             flash(
-                "Acesso negado! Somente instituições podem acessar esta página.", "error")
+                {'titulo': 'Acesso negado!',
+                 'corpo': ' Somente instituições podem acessar esta página.'})
             return redirect(url_for("index"))
         return f(*args, **kwargs)
     return decorated_function
@@ -168,7 +217,9 @@ def aluno_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if session.get("user_type") != "aluno":
-            flash("Acesso negado! Somente alunos podem acessar esta página.", "error")
+            flash(
+                {'titulo': 'Acesso negado!',
+                 'corpo': ' Somente alunos podem acessar esta página.'})
             return redirect(url_for("index"))
         return f(*args, **kwargs)
     return decorated_function
@@ -194,7 +245,7 @@ def cadastro():
                     {'titulo': 'Erro', 'corpo': 'Data de nascimento inválida! Use o formato AAAA-MM-DD.'})
                 return redirect(url_for('cadastro'))
 
-            # Coletar outros dados do formulário
+            # Coletar outros dados do formulário Preencha
             numero_bilhete = request.form['numeroBilhete'].capitalize()
             genero = request.form['genero']
             email = request.form['email']
@@ -233,9 +284,9 @@ def cadastro():
             db.session.commit()
 
             flash({'titulo': 'Cadastro realizado com sucesso!',
-                  'corpo': 'Faça login para continuar.'})
+                   'corpo': 'Faça login para continuar.'})
             adicionar_log(f'Novo aluno cadastrado: {
-                          novo_aluno.nome_completo}', tipo='informação', usuario=novo_aluno, tipo_usuario='aluno')
+                novo_aluno.nome_completo}', tipo='informação', usuario=novo_aluno, tipo_usuario='aluno')
             return redirect(url_for('login'))
 
         except IntegrityError as e:
@@ -254,14 +305,14 @@ def cadastro():
 
             flash({'titulo': 'Erro no cadastro', 'corpo': corpo_mensagem})
             adicionar_log(f'Erro de banco de dados ao cadastrar aluno: {
-                          corpo_mensagem}', tipo='erro', usuario=None, tipo_usuario='aluno')
+                corpo_mensagem}', tipo='erro', usuario=None, tipo_usuario='aluno')
             return redirect(url_for('cadastro'))
 
         except Exception as e:
             flash({'titulo': 'Erro inesperado',
-                  'corpo': f'Erro inesperado: {str(e)}'})
+                   'corpo': f'Erro inesperado: {str(e)}'})
             adicionar_log(f'Erro inesperado ao cadastrar aluno: {
-                          str(e)}', tipo='erro', usuario=None, tipo_usuario='aluno')
+                str(e)}', tipo='erro', usuario=None, tipo_usuario='aluno')
             return redirect(url_for('cadastro'))
 
     return render_template('cadastro.html')
@@ -277,7 +328,8 @@ def upload(user_id):
             # Verificar se os arquivos foram enviados
             if 'frente_bilhete' not in request.files or 'verso_bilhete' not in request.files or 'certificado' not in request.files:
                 flash(
-                    {'titulo': 'Erro', 'corpo': 'Faltam arquivos! Por favor, envie todos os arquivos solicitados.'})
+                    {'titulo': 'Erro',
+                        'corpo': 'Faltam arquivos! Por favor, envie todos os arquivos solicitados.'})
                 return redirect(url_for('upload', user_id=user_id))
 
             frente_bilhete = request.files['frente_bilhete']
@@ -313,39 +365,26 @@ def upload(user_id):
                 db.session.commit()
 
                 adicionar_log(f'Upload de documentos realizado com sucesso para o aluno {
-                              current_user.nome_completo}', tipo='informação', usuario=current_user, tipo_usuario='aluno')
+                    current_user.nome_completo}', tipo='informação', usuario=current_user, tipo_usuario='aluno')
                 flash({'titulo': 'Sucesso',
-                      'corpo': 'Documentos enviados com sucesso!'})
+                       'corpo': 'Documentos enviados com sucesso!'})
                 return redirect(url_for('portal_estudante', aluno=current_user))
 
             else:
                 flash(
                     {'titulo': 'Erro', 'corpo': 'Formato de arquivo inválido! Certifique-se de que os arquivos são do tipo permitido.'})
                 adicionar_log(f'Erro ao tentar fazer upload de documentos para o aluno {
-                              current_user.nome_completo}: Formato de arquivo inválido.', tipo='erro', usuario=current_user, tipo_usuario='aluno')
+                    current_user.nome_completo}: Formato de arquivo inválido.', tipo='erro', usuario=current_user, tipo_usuario='aluno')
                 return redirect(url_for('upload', user_id=user_id))
 
         except Exception as e:
             flash({'titulo': 'Erro Durante o Upload',
-                  'corpo': f'Erro inesperado ao processar o upload: {str(e)}'})
+                   'corpo': f'Erro inesperado ao processar o upload: {str(e)}'})
             adicionar_log(f'Erro ao tentar fazer upload de documentos para o aluno {
-                          current_user.nome_completo}: {str(e)}', tipo='erro', usuario=current_user, tipo_usuario='aluno')
+                current_user.nome_completo}: {str(e)}', tipo='erro', usuario=current_user, tipo_usuario='aluno')
             return redirect(url_for('upload', user_id=user_id))
 
     return render_template('upload.html', user_id=user_id)
-
-
-@app.route('/erro_upload')
-def erro_upload():
-    mensagem = request.args.get('mensagem')
-    user_id = request.args.get('user_id')  # Pegando o ID do usuário da URL
-    return render_template('erro_upload.html', mensagem=mensagem, user_id=user_id)
-
-
-# @app.route('/cadastro', msg=msg)
-# def cadastro(, msg=msg):
-#    mensagem = request.args.get('mensagem', 'Erro desconhecido.')
-#    return render_template('cadastro., msg=msghtml')
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -355,7 +394,9 @@ def login():
         senha = request.form.get('password')
 
         if not email or not senha:
-            flash('Preencha todos os campos!', 'error')
+            flash({
+                'titulo': 'Aviso',
+                'corpo': 'Preencha todos os campos!'})
             return render_template('login.html')
 
         # Verifica nas três tabelas
@@ -381,9 +422,9 @@ def login():
             login_user(user)
             # adicionar_log(f'Usuário {current_user.nome_completo} fez login com sucesso',
             #              tipo='informação', usuario=current_user, tipo_usuario=current_user.tipo)
-            flash('Login bem-sucedido!', 'success')
+
             flash({
-                'titulo': 'Aviso',
+                'titulo': 'Sucesso',
                 'corpo': 'Login bem-sucedido!'})
 
             # Redirecionamento baseado no tipo
@@ -395,7 +436,7 @@ def login():
                 return redirect(url_for('painel_admin'))
         else:
             adicionar_log(f'Falha ao tentar login com email: {
-                          request.form["email"]}', tipo='erro', usuario=None, tipo_usuario='aluno')
+                request.form["email"]}', tipo='erro', usuario=None, tipo_usuario='aluno')
             flash({
                 'titulo': 'Erro',
                 'corpo': 'Credenciais inválidas. Verifique o email e a senha.'})
@@ -419,14 +460,14 @@ def portal_estudante():
 def painel_admin():
     # Pegar o parâmetro de pesquisa
     search = request.args.get('search', '')
-    seccao = ''
+
     # Buscar alunos com base na pesquisa (caso haja)
     if search:
         alunos = Aluno.query.filter(
             (Aluno.id.like(f"%{search}%")) |
             (Aluno.nome_completo.like(f"%{search}%")) |
             (Aluno.numero_bilhete.like(f"%{search}%"))).all()
-        seccao = '#alunos'
+
     else:
         # Caso não haja pesquisa, listar todos os alunos
         alunos = Aluno.query.all()
@@ -466,14 +507,15 @@ def atualizar_aluno(aluno_id):
             data_nascimento = datetime.strptime(
                 request.form['data_nascimento'], '%Y-%m-%d').date()
         except ValueError:
-            flash(
-                'Erro: Data de nascimento inválida! Por favor, insira no formato correto (AAAA-MM-DD).', 'error')
+            flash({
+                'titulo': 'Erro',
+                'corpo': 'Data de nascimento inválida! Por favor, insira no formato correto (AAAA-MM-DD).'})
             return redirect(url_for('painel_admin'))
 
-        numero_bilhete = request.form['numero_bilhete']
+        numero_bilhete = request.form['numero_bilhete'].capitalize()
         genero = request.form['genero']
         email = request.form['email']
-        senha = request.form['senha']  # Se for uma senha vazia, não atualize
+        senha = request.form['senha']  # Se for uma senha vazia, não atualiza
         instituicao_9_classe = request.form['instituicao_9_classe']
         ano_conclusao = request.form['ano_conclusao']
         media_final = request.form['media_final']
@@ -503,7 +545,10 @@ def atualizar_aluno(aluno_id):
             aluno.senha = generate_password_hash(senha)
 
         db.session.commit()
-        flash('Dados atualizados com sucesso', 'success')
+        flash({
+            'titulo': 'Sucesso',
+            'corpo': 'Dados atualizados com sucesso'
+        })
 
         return redirect(url_for('painel_admin') + '#alunos')
 
@@ -519,10 +564,19 @@ def deletar_aluno(aluno_id):
     try:
         db.session.delete(aluno)  # Deletando o aluno
         db.session.commit()  # Confirmando a exclusão no banco de dados
-        flash('Aluno excluído com sucesso', 'success')
+
+        flash({
+            'titulo': 'Sucesso',
+            'corpo': 'Aluno excluído com sucesso'
+        })
+
     except Exception as e:
         db.session.rollback()  # Se ocorrer um erro, faz o rollback
-        flash(f'Ocorreu um erro ao excluir o aluno: {str(e)}', 'danger')
+
+        flash({
+            'titulo': 'Erro',
+            'corpo': f'Ocorreu um erro ao excluir o aluno: {str(e)}'
+        })
 
     # Depois de deletar,  chamar a função de renderização para painel_admin
     return redirect(url_for('painel_admin') + '#alunos')
@@ -539,7 +593,7 @@ def instituicao_dashboard():
 @login_required
 def logout():
     # Registrar o log de logout
-    # mensagem = f'O usuário {current_user.id} fez logout'
+    # mensagem = f'O usuário {current_user.nome_completo} fez logout'
     # adicionar_log(mensagem=mensagem, tipo='informação',
     #              usuario=current_user, tipo_usuario='aluno')
 
@@ -547,7 +601,12 @@ def logout():
     logout_user()
 
     # Exibir uma mensagem flash e redirecionar para a página de login
-    flash('Você saiu da sua conta.', 'info')
+
+    flash({
+        'titulo': 'Aviso',
+        'corpo': 'Você saiu da sua conta.'
+    })
+
     return redirect(url_for('login'))
 
 
