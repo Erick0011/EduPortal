@@ -316,7 +316,7 @@ def upload(user_id):
                               current_user.nome_completo}', tipo='informação', usuario=current_user, tipo_usuario='aluno')
                 flash({'titulo': 'Sucesso',
                       'corpo': 'Documentos enviados com sucesso!'})
-                return redirect(url_for('portal_estudante'))
+                return redirect(url_for('portal_estudante', aluno=current_user))
 
             else:
                 flash(
@@ -419,14 +419,14 @@ def portal_estudante():
 def painel_admin():
     # Pegar o parâmetro de pesquisa
     search = request.args.get('search', '')
-
+    seccao = ''
     # Buscar alunos com base na pesquisa (caso haja)
     if search:
         alunos = Aluno.query.filter(
             (Aluno.id.like(f"%{search}%")) |
             (Aluno.nome_completo.like(f"%{search}%")) |
-            (Aluno.numero_bilhete.like(f"%{search}%"))
-        ).all()
+            (Aluno.numero_bilhete.like(f"%{search}%"))).all()
+        seccao = '#alunos'
     else:
         # Caso não haja pesquisa, listar todos os alunos
         alunos = Aluno.query.all()
@@ -438,6 +438,7 @@ def painel_admin():
         Aluno.created_at.desc()).limit(5).all()
 
     agora = datetime.now()
+
     return render_template('painel_admin.html',
                            agora=agora,
                            admin=current_user,
@@ -504,7 +505,7 @@ def atualizar_aluno(aluno_id):
         db.session.commit()
         flash('Dados atualizados com sucesso', 'success')
 
-        return redirect(url_for('painel_admin'))
+        return redirect(url_for('painel_admin') + '#alunos')
 
 
 @app.route('/deletar_aluno/<int:aluno_id>', methods=['GET'])
@@ -513,7 +514,7 @@ def deletar_aluno(aluno_id):
 
     if not aluno:
         flash('Aluno não encontrado', 'danger')
-        return redirect(url_for('painel_admin'))
+        return redirect(url_for('painel_admin') + '#alunos')
 
     try:
         db.session.delete(aluno)  # Deletando o aluno
@@ -524,7 +525,7 @@ def deletar_aluno(aluno_id):
         flash(f'Ocorreu um erro ao excluir o aluno: {str(e)}', 'danger')
 
     # Depois de deletar,  chamar a função de renderização para painel_admin
-    return redirect(url_for('painel_admin'))
+    return redirect(url_for('painel_admin') + '#alunos')
 
 
 @app.route('/instituicao_dashboard')
