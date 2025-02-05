@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import BadRequest
+from faker import Faker
 from datetime import datetime
 from functools import wraps
 import os
@@ -27,8 +28,12 @@ login_manager.login_message = "Por favor, faça login para acessar esta página.
 # Inicializando o banco de dados
 db = SQLAlchemy(app)
 
+# config do faker
+faker = Faker('pt_PT')
 
 # Função para verificar se a extensão do arquivo é permitida
+
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
@@ -124,16 +129,7 @@ class Admin(UserMixin, db.Model):
     email = db.Column(db.String(255), unique=True, nullable=False)
     tipo = db.Column(db.String(50), default="admin", nullable=False)
     senha = db.Column(db.String(256), nullable=False)
-# Criar um novo admin
-# novo_admin = Admin(
-# nome_admin="Administrador",
-# email="admin@escola.com",
-# senha=generate_password_hash("senha_segura123")  # Senha segura com hash
-#        )
 
-# Adicionar ao banco de dados
-# db.session.add(novo_admin)
-# db.session.commit()
 
 # logs do sitema
 
@@ -589,6 +585,120 @@ def deletar_aluno(aluno_id):
 @funcionario_required
 def instituicao_dashboard():
     return render_template('instituicao_dashboard.html')
+
+# Debug
+
+
+def criar_aluno_aleatorio():
+    nome_completo = faker.name()
+    data_nascimento = faker.date_of_birth(minimum_age=15, maximum_age=20)
+
+    # Número do bilhete: 9 números + 2 letras + 3 números
+    numeros_iniciais = faker.random_number(digits=9, fix_len=True)
+    letras = faker.random_uppercase_letter() + faker.random_uppercase_letter()
+    numeros_finais = faker.random_number(digits=3, fix_len=True)
+    numero_bilhete = f"{numeros_iniciais}{letras}{numeros_finais}"
+
+    genero = faker.random_element(elements=('Masculino', 'Feminino'))
+    email = faker.unique.email()
+    senha = generate_password_hash('12345')  # Senha padrão com hash
+    instituicao_9_classe = faker.company()
+    ano_conclusao = faker.random_int(min=2000, max=2025)
+    media_final = round(faker.pyfloat(min_value=10.0, max_value=20.0), 2)
+    turno_preferido = faker.random_element(
+        elements=('Manhã', 'Tarde', 'Noite'))
+
+    # Telefone: 9 dígitos começando com 9
+    telefone = f"9{faker.random_number(digits=8, fix_len=True)}"
+
+    provincias = [
+        'Bengo', 'Benguela', 'Bié', 'Cabinda', 'Cuando', 'Cuanza Norte', 'Cuanza Sul',
+        'Cubango', 'Cunene', 'Huambo', 'Huila', 'Icole Bengo', 'Luanda', 'Lunda Sul',
+        'Lunda Norte', 'Malanje', 'Moxico', 'Moxico Leste', 'Namibe', 'Uíge', 'Zaire'
+    ]
+    municipio = faker.city()
+    bairro = faker.street_name()
+    provincia = faker.random_element(
+        elements=provincias)
+
+    # Criação do objeto Aluno
+    novo_aluno = Aluno(
+        nome_completo=nome_completo,
+        data_nascimento=data_nascimento,
+        numero_bilhete=numero_bilhete,
+        genero=genero,
+        email=email,
+        senha=senha,
+        instituicao_9_classe=instituicao_9_classe,
+        ano_conclusao=ano_conclusao,
+        media_final=media_final,
+        turno_preferido=turno_preferido,
+        telefone=telefone,  # Agora com o formato correto
+        municipio=municipio,
+        bairro=bairro,
+        provincia=provincia
+    )
+
+    # Adiciona ao banco de dados
+    db.session.add(novo_aluno)
+    db.session.commit()
+
+    return  # Retorna o nome do aluno criado para exibir como feedback
+
+
+debug_buttons = [
+    "Criar admin",
+    "Criar 1 aluno",
+    "Criar 10 aluno",
+    "Criar 50 aluno",
+    "Por definir",
+    "Por definir",
+    "Por definir",
+    "Por definir",
+    "Por definir",
+    "Por definir"
+]
+
+
+@app.route('/debug')
+def debug():
+    return render_template('debug.html', debug_buttons=debug_buttons)
+
+
+@app.route('/debug_action/<int:action_id>', methods=['POST'])
+def debug_action(action_id):
+    # Obtém o nome da ação baseado no ID
+    action_name = debug_buttons[action_id - 1]
+    flash({'titulo': 'debug', 'corpo': f'Ação "{
+          action_name}" executada com sucesso!'})
+
+    # Aqui você pode adicionar a lógica específica para cada ação
+    if action_id == 1:
+        # Criar um novo admin
+        novo_admin = Admin(
+            nome_completo="Administrador",
+            email="admin@escola.com",
+            senha=generate_password_hash(
+                "123456")  # Senha segura com hash
+        )
+        db.session.add(novo_admin)
+        db.session.commit()
+
+        pass
+    elif action_id == 2:
+        criar_aluno_aleatorio()
+        pass
+    elif action_id == 3:
+        for _ in range(10):
+            criar_aluno_aleatorio()
+        pass
+    elif action_id == 4:
+        for _ in range(50):
+            criar_aluno_aleatorio()
+        pass
+
+    # Redireciona de volta para o painel de debug
+    return redirect(url_for('debug'))
 
 
 @app.route('/logout', methods=['POST'])
