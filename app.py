@@ -66,12 +66,11 @@ class Instituicao(UserMixin, db.Model):
     __tablename__ = 'instituicao'
     id = db.Column(db.Integer, primary_key=True)
     nome_instituicao = db.Column(db.String(255), nullable=False)
-    email = db.Column(db.String(255), unique=True, nullable=False)
+    email = db.Column(db.String(255), nullable=False)
     tipo = db.Column(db.String(50), default="instituicao", nullable=False)
     endereco = db.Column(db.String(255), nullable=True)
     cidade = db.Column(db.String(100), nullable=True)
     provincia = db.Column(db.String(100), nullable=True)
-    codigo_postal = db.Column(db.String(20), nullable=True)
     telefone = db.Column(db.String(20), nullable=True)
     descricao = db.Column(db.Text, nullable=True)
     status = db.Column(db.String(50), default="ativo", nullable=False)
@@ -81,7 +80,8 @@ class Instituicao(UserMixin, db.Model):
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Campos adicionais para curso e número de vagas
-    curso = db.Column(db.String(255), nullable=True)  # Nome do curso oferecido
+    # Nome do curso oferecido
+    cursos = db.Column(db.String(255), nullable=True)
     # Número de vagas para o curso
     numero_vagas = db.Column(db.Integer, nullable=True)
 
@@ -99,7 +99,7 @@ class Funcionario(db.Model):
     nome_completo = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
     senha = db.Column(db.String(256), nullable=False)
-    tipo = db.Column(db.String(50), default="instituicao", nullable=False)
+    tipo = db.Column(db.String(50), default="funcionario", nullable=False)
     # Cargo do funcionário
     permissao = db.Column(db.String(100), nullable=False)
     telefone = db.Column(db.String(20), nullable=True)
@@ -120,7 +120,7 @@ class Funcionario(db.Model):
 class Admin(UserMixin, db.Model):
     __tablename__ = 'admin'
     id = db.Column(db.Integer, primary_key=True)
-    nome_admin = db.Column(db.String(255), nullable=False)
+    nome_completo = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
     tipo = db.Column(db.String(50), default="admin", nullable=False)
     senha = db.Column(db.String(256), nullable=False)
@@ -175,8 +175,8 @@ def load_user(user_id):
 
     if user_type == "aluno":
         return Aluno.query.get(int(user_id))
-    elif user_type == "instituicao":
-        return Instituicao.query.get(int(user_id))
+    elif user_type == "funcionario":
+        return Funcionario.query.get(int(user_id))
     elif user_type == "admin":
         return Admin.query.get(int(user_id))
 
@@ -199,13 +199,13 @@ def admin_required(f):
 # Decorador para Instituições
 
 
-def instituicao_required(f):
+def funcionario_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if session.get("user_type") != "instituicao":
+        if session.get("user_type") != "funcionario":
             flash(
                 {'titulo': 'Acesso negado!',
-                 'corpo': ' Somente instituições podem acessar esta página.'})
+                 'corpo': ' Somente fúncionarios de instituições podem acessar esta página.'})
             return redirect(url_for("index"))
         return f(*args, **kwargs)
     return decorated_function
@@ -386,6 +386,8 @@ def upload(user_id):
 
     return render_template('upload.html', user_id=user_id)
 
+# Login route
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -401,7 +403,7 @@ def login():
 
         # Verifica nas três tabelas
         aluno = Aluno.query.filter_by(email=email).first()
-        instituicao = Instituicao.query.filter_by(email=email).first()
+        funcionario = Funcionario.query.filter_by(email=email).first()
         admin = Admin.query.filter_by(email=email).first()
 
         user = None
@@ -410,9 +412,9 @@ def login():
         if aluno and check_password_hash(aluno.senha, senha):
             user = aluno
             user_type = "aluno"
-        elif instituicao and check_password_hash(instituicao.senha, senha):
-            user = instituicao
-            user_type = "instituicao"
+        elif funcionario and check_password_hash(funcionario.senha, senha):
+            user = funcionario
+            user_type = "funcionario"
         elif admin and check_password_hash(admin.senha, senha):
             user = admin
             user_type = "admin"
@@ -436,7 +438,7 @@ def login():
                 return redirect(url_for('painel_admin'))
         else:
             adicionar_log(f'Falha ao tentar login com email: {
-                request.form["email"]}', tipo='erro', usuario=None, tipo_usuario='aluno')
+                request.form["email"]}', tipo='erro', usuario=None, tipo_usuario='desconhecido')
             flash({
                 'titulo': 'Erro',
                 'corpo': 'Credenciais inválidas. Verifique o email e a senha.'})
@@ -584,7 +586,7 @@ def deletar_aluno(aluno_id):
 
 @app.route('/instituicao_dashboard')
 @login_required
-@instituicao_required
+@funcionario_required
 def instituicao_dashboard():
     return render_template('instituicao_dashboard.html')
 
