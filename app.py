@@ -279,8 +279,9 @@ def cadastro():
 
             flash({'titulo': 'Cadastro realizado com sucesso!',
                    'corpo': 'Faça login para continuar.'})
-            adicionar_log(f'Novo aluno cadastrado: {
-                novo_aluno.nome_completo}', tipo='informação', usuario=novo_aluno, tipo_usuario='aluno')
+            adicionar_log(f'Novo aluno cadastrado: {novo_aluno.nome_completo}',
+                          tipo='informação', usuario=novo_aluno, tipo_usuario='aluno')
+
             return redirect(url_for('login'))
 
         except IntegrityError as e:
@@ -298,15 +299,15 @@ def cadastro():
                 corpo_mensagem = f"Erro no banco de dados: {mensagem}"
 
             flash({'titulo': 'Erro no cadastro', 'corpo': corpo_mensagem})
-            adicionar_log(f'Erro de banco de dados ao cadastrar aluno: {
-                corpo_mensagem}', tipo='erro', usuario=None, tipo_usuario='aluno')
+            adicionar_log(f'Erro de banco de dados ao cadastrar aluno: {corpo_mensagem}',
+                          tipo='erro', usuario=None, tipo_usuario='aluno')
             return redirect(url_for('cadastro'))
 
         except Exception as e:
             flash({'titulo': 'Erro inesperado',
                    'corpo': f'Erro inesperado: {str(e)}'})
-            adicionar_log(f'Erro inesperado ao cadastrar aluno: {
-                str(e)}', tipo='erro', usuario=None, tipo_usuario='aluno')
+            adicionar_log(f'Erro inesperado ao cadastrar aluno: {str(e)}',
+                          tipo='erro', usuario=None, tipo_usuario='aluno')
             return redirect(url_for('cadastro'))
 
     return render_template('cadastro.html')
@@ -358,8 +359,8 @@ def upload(user_id):
                     app.config['UPLOAD_FOLDER'], certificado_filename)
                 db.session.commit()
 
-                adicionar_log(f'Upload de documentos realizado com sucesso para o aluno {
-                    current_user.nome_completo}', tipo='informação', usuario=current_user, tipo_usuario='aluno')
+                adicionar_log(f'Upload de documentos realizado com sucesso para o aluno {current_user.nome_completo}',
+                              tipo='informação', usuario=current_user, tipo_usuario='aluno')
                 flash({'titulo': 'Sucesso',
                        'corpo': 'Documentos enviados com sucesso!'})
                 return redirect(url_for('portal_estudante', aluno=current_user))
@@ -367,15 +368,15 @@ def upload(user_id):
             else:
                 flash(
                     {'titulo': 'Erro', 'corpo': 'Formato de arquivo inválido! Certifique-se de que os arquivos são do tipo permitido.'})
-                adicionar_log(f'Erro ao tentar fazer upload de documentos para o aluno {
-                    current_user.nome_completo}: Formato de arquivo inválido.', tipo='erro', usuario=current_user, tipo_usuario='aluno')
+                adicionar_log(f'Erro ao tentar fazer upload de documentos para o aluno {current_user.nome_completo} - Formato de arquivo inválido.',
+                              tipo='erro', usuario=current_user, tipo_usuario='aluno')
                 return redirect(url_for('upload', user_id=user_id))
 
         except Exception as e:
             flash({'titulo': 'Erro Durante o Upload',
                    'corpo': f'Erro inesperado ao processar o upload: {str(e)}'})
-            adicionar_log(f'Erro ao tentar fazer upload de documentos para o aluno {
-                current_user.nome_completo}: {str(e)}', tipo='erro', usuario=current_user, tipo_usuario='aluno')
+            adicionar_log(f'Erro ao tentar fazer upload de documentos para o aluno {current_user.nome_completo}: {str(e)}',
+                          tipo='erro', usuario=current_user, tipo_usuario='aluno')
             return redirect(url_for('upload', user_id=user_id))
 
     return render_template('upload.html', user_id=user_id)
@@ -431,8 +432,9 @@ def login():
             elif user_type == "admin":
                 return redirect(url_for('painel_admin'))
         else:
-            adicionar_log(f'Falha ao tentar login com email: {
-                request.form["email"]}', tipo='erro', usuario=None, tipo_usuario='desconhecido')
+            adicionar_log(
+                f"Falha ao tentar login com email: {request.form['email']}", tipo='erro', usuario=None, tipo_usuario='desconhecido')
+
             flash({
                 'titulo': 'Erro',
                 'corpo': 'Credenciais inválidas. Verifique o email e a senha.'})
@@ -671,8 +673,7 @@ def debug():
 def debug_action(action_id):
     # Obtém o nome da ação baseado no ID
     action_name = debug_buttons[action_id - 1]
-    flash({'titulo': 'debug', 'corpo': f'Ação "{
-          action_name}" executada com sucesso!'})
+    flash({'titulo': 'debug', 'corpo': f"Ação {action_name} executada com sucesso!"})
 
     # Aqui você pode adicionar a lógica específica para cada ação
     if action_id == 1:
