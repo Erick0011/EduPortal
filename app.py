@@ -84,10 +84,8 @@ class Instituicao(UserMixin, db.Model):
     data_atualizacao = db.Column(
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Campos adicionais para curso e número de vagas
-    # Nome do curso oferecido
     cursos = db.Column(db.String(255), nullable=True)
-    # Número de vagas para o curso
+
     numero_vagas = db.Column(db.Integer, nullable=True)
 
     # Relacionamento com a tabela Funcionario
@@ -556,7 +554,11 @@ def deletar_aluno(aluno_id):
     aluno = Aluno.query.get(aluno_id)
 
     if not aluno:
-        flash('Aluno não encontrado', 'danger')
+        flash({
+            'titulo': 'Sucesso',
+            'corpo': 'Aluno não encontrado'
+        })
+
         return redirect(url_for('painel_admin') + '#alunos')
 
     try:
