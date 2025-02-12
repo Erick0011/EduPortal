@@ -47,7 +47,7 @@ Como Funciona o EduPortal para Instituições
     <section class="mb-5">
         <h2 class="text-laranja">Cadastro de Interesse</h2>
         <p>Preencha o formulário abaixo para cadastrar sua instituição no EduPortal. Entraremos em contato para concluir o processo.</p>
-        <form method="post" action="" enctype="multipart/form-data">
+        <form method="post" action="{{ url_for('interesse') }}" enctype="multipart/form-data">
             <div class="mb-3">
                 <label for="nome_instituicao" class="form-label">Nome da Instituição</label>
                 <input type="text" class="form-control" id="nome_instituicao" name="nome_instituicao" required>

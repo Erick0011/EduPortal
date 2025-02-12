@@ -162,6 +162,26 @@ def adicionar_log(mensagem, tipo='informação', usuario=None, tipo_usuario='des
     db.session.commit()
 
 
+class InteresseInstituicao(db.Model):
+    __tablename__ = 'interesses_instituicoes'
+    id = db.Column(db.Integer, primary_key=True)
+    nome_instituicao = db.Column(db.String(255), nullable=False)
+    nome_responsavel = db.Column(db.String(255), nullable=False)
+    email = db.Column(db.String(255), nullable=False)
+    telefone = db.Column(db.String(15), nullable=False)
+    data_cadastro = db.Column(db.DateTime, default=datetime.utcnow)
+    documentos = db.relationship('Documento', backref='interesse', lazy=True)
+
+
+class Documento(db.Model):
+    __tablename__ = 'documentos'
+    id = db.Column(db.Integer, primary_key=True)
+    nome_arquivo = db.Column(db.String(255), nullable=False)
+    caminho_arquivo = db.Column(db.String(255), nullable=False)
+    interesse_id = db.Column(db.Integer, db.ForeignKey(
+        'interesses_instituicoes.id'), nullable=False)
+
+
 @login_manager.user_loader
 def load_user(user_id):
     # Recupera o tipo do usuário na sessão
@@ -594,6 +614,55 @@ def instituicao_dashboard():
 @app.route('/instituicoes')
 def instituicoes():
     return render_template('txt_instituicoes.html')
+
+
+@app.route('/instituicoes/interesse', methods=['GET', 'POST'])
+def interesse():
+    if request.method == 'POST':
+        nome_instituicao = request.form['nome_instituicao']
+        nome_responsavel = request.form['nome_responsavel']
+        email = request.form['email']
+        telefone = request.form['telefone']
+
+        # Salva o interesse no banco de dados
+        novo_interesse = InteresseInstituicao(
+            nome_instituicao=nome_instituicao,
+            nome_responsavel=nome_responsavel,
+            email=email,
+            telefone=telefone
+        )
+        db.session.add(novo_interesse)
+        db.session.commit()
+
+        # Diretório para salvar os documentos
+        upload_folder = os.path.join(
+            app.config['UPLOAD_FOLDER'], str(novo_interesse.id))
+        os.makedirs(upload_folder, exist_ok=True)
+
+        # Salvar e renomear os documentos
+        for file in request.files.getlist('documentos'):
+            if file and file.filename.endswith('.pdf'):
+                # Renomeia com o nome da instituição e um índice para evitar conflitos
+                index = request.files.getlist('documentos').index(file) + 1
+                nome_limpo = nome_instituicao.replace(' ', '_').lower()
+                novo_nome = f"{nome_limpo}_{index}.pdf"
+                caminho_arquivo = os.path.join(upload_folder, novo_nome)
+                file.save(caminho_arquivo)
+
+                # Salva as informações no banco de dados
+                novo_documento = Documento(
+                    nome_arquivo=novo_nome,
+                    caminho_arquivo=caminho_arquivo,
+                    interesse_id=novo_interesse.id
+                )
+                db.session.add(novo_documento)
+
+        db.session.commit()
+
+        flash('Cadastro realizado com sucesso!', 'success')
+        return redirect(url_for('index'))
+
+    return redirect(url_for('instituicoes'))
 
 # Debug
 
