@@ -493,11 +493,14 @@ def painel_admin():
         # Caso não haja pesquisa, listar todos os alunos
         alunos = Aluno.query.all()
 
-    # Buscar logs e contar o total de alunos
+    # Buscar dados
     logs_sistema = Log.query.order_by(Log.data_hora.desc()).limit(30).all()
     total_alunos = Aluno.query.count()
+    total_instituicoes = Instituicao.query.count()
     alunos_recentes = Aluno.query.order_by(
         Aluno.created_at.desc()).limit(5).all()
+    instituicoes = Instituicao.query.all()
+
     por_concluir = InteresseInstituicao.query.filter_by(
         status='pendente').all()
     nao_concluir = InteresseInstituicao.query.filter_by(
@@ -512,7 +515,10 @@ def painel_admin():
                            total_alunos=total_alunos,
                            alunos_recentes=alunos_recentes,
                            por_concluir=por_concluir,
-                           nao_concluir=nao_concluir)
+                           nao_concluir=nao_concluir,
+                           total_instituicoes=total_instituicoes,
+                           instituicoes=instituicoes
+                           )
 
 
 @app.route('/atualizar_aluno/<int:aluno_id>', methods=['GET', 'POST'])
