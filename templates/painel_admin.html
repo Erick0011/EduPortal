@@ -288,6 +288,28 @@
         <div class="tab-pane fade" id="instituicoes">
             <h1>Instituições</h1>
             <p>Gestão de instituições.</p>
+             <!-- Tabela de Alunos -->
+             <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Nome</th>
+                        <th scope="col">E-mail</th>
+                        <th scope="col">Telefone</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for instituicao in instituicoes %}
+                        <tr>
+                            <td>{{ instituicao.id }}</td>
+                            <td>{{ instituicao.nome_instituicao }}</td>
+                            <td>{{ instituicao.email }}</td>
+                            <td>{{ instituicao.telefone }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
         </div>
         <div class="tab-pane fade" id="DemonstraçõesDeInteresse">
             <div class="container mt-5">
