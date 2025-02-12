@@ -590,6 +590,11 @@ def deletar_aluno(aluno_id):
 def instituicao_dashboard():
     return render_template('instituicao_dashboard.html')
 
+
+@app.route('/instituicoes')
+def instituicoes():
+    return render_template('txt_instituicoes.html')
+
 # Debug
 
 
