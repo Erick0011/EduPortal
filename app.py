@@ -697,6 +697,8 @@ def marcar_concluido(id):
 
 
 @app.route('/remover_interesse/<int:id>', methods=['POST'])
+@admin_required
+@login_required
 def remover_interesse(id):
     interesse = InteresseInstituicao.query.get_or_404(id)
 
@@ -710,6 +712,47 @@ def remover_interesse(id):
     return redirect(url_for('painel_admin') + '#DemonstraçõesDeInteresse')
 
 
+@app.route('/criar_instituicao', methods=['GET', 'POST'])
+@admin_required
+@login_required
+def criar_instituicao():
+    if request.method == 'POST':
+        nome_instituicao = request.form['nome_instituicao']
+        email_instituicao = request.form['email_instituicao']
+        nome_master = request.form['nome_master']
+        email_master = request.form['email_master']
+        senha_master = request.form['senha_master']
+        telefone_master = request.form['telefone_master']
+
+        # Verifica se o email do master já existe
+        existe_master = Funcionario.query.filter_by(email=email_master).first()
+        if existe_master:
+            flash('Já existe um funcionário com este email!', 'danger')
+            return redirect(url_for('painel_admin') + '#criar-instituicoes')
+
+        # Cria a Instituição
+        instituicao = Instituicao(
+            nome_instituicao=nome_instituicao, email=email_instituicao)
+        db.session.add(instituicao)
+        db.session.commit()  # Confirma para obter o ID da instituição
+
+        # Cria o Funcionário Master
+        senha_hash = generate_password_hash(senha_master)
+        master = Funcionario(
+            nome_completo=nome_master,
+            email=email_master,
+            senha=senha_hash,
+            telefone=telefone_master,
+            permissao='master',
+            instituicao_id=instituicao.id
+        )
+        db.session.add(master)
+        db.session.commit()
+
+        flash('Instituição e Master criados com sucesso!', 'success')
+        return redirect(url_for('painel_admin') + '#criar-instituicoes')
+
+    return redirect(url_for('painel_admin') + '#criar-instituicoes')
 # Debug
 
 

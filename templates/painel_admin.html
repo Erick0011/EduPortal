@@ -360,8 +360,41 @@
             
         </div>
         <div class="tab-pane fade" id="criar-instituicoes">
-            <h1>Criar Instituições</h1>
-            <p>Formulário para cadastrar novas instituições.</p>
+            <div class="container mt-5">
+                <h2 class="text-center">Criar Instituição e Responsável</h2>
+                <form action="{{ url_for('criar_instituicao') }}" method="POST">
+                    <div class="card shadow p-4">
+                        <h4>Dados da Instituição</h4>
+                        <div class="form-group mb-3">
+                            <label for="nome_instituicao">Nome da Instituição:</label>
+                            <input type="text" class="form-control" id="nome_instituicao" name="nome_instituicao" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="email_instituicao">Email da Instituição:</label>
+                            <input type="email" class="form-control" id="email_instituicao" name="email_instituicao" required>
+                        </div>
+                        <hr>
+                        <h4>Dados do Responsável</h4>
+                        <div class="form-group mb-3">
+                            <label for="nome_master">Nome Completo:</label>
+                            <input type="text" class="form-control" id="nome_master" name="nome_master" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="email_master">Email:</label>
+                            <input type="email" class="form-control" id="email_master" name="email_master" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="telefone_master">Telefone:</label>
+                            <input type="text" class="form-control" id="telefone_master" name="telefone_master">
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="senha_master">Senha:</label>
+                            <input type="password" class="form-control" id="senha_master" name="senha_master" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Criar Instituição</button>
+                    </div>
+                </form>
+            </div>
         </div>
         <div class="tab-pane fade" id="mensagens">
             <h1>Mensagens</h1>
