@@ -1,16 +1,75 @@
 {% extends "base_txt.html" %}
 
 {% block titulo %}
-Título da Página de Texto
+Como Funciona o EduPortal para Instituições
 {% endblock %}
 
 {% block conteudo %}
-<article class="card">
-    <div class="card-body">
-        <h1 class="card-title">Título do Texto</h1>
-        <p class="card-text">
-            Este é um exemplo de página com texto. Você pode adicionar parágrafos, listas, imagens, e muito mais usando o poder do Jinja2 e Bootstrap.
-        </p>
-    </div>
-</article>
+<div class="container mt-5">
+    <!-- Título da Página -->
+    <h1 class="text-azul text-center mb-4">Como Funciona o EduPortal para Instituições</h1>
+
+    <!-- Seção: Como Funciona -->
+    <section class="mb-5">
+        <h2 class="text-laranja">Como Funciona</h2>
+        <p>O EduPortal é uma plataforma completa para facilitar a gestão de inscrições escolares e comunicação com candidatos. As funcionalidades incluem:</p>
+        <ul>
+            <li>Recebimento de inscrições online;</li>
+            <li>Filtragem inteligente de candidatos;</li>
+            <li>Visualização de documentos enviados pelos candidatos;</li>
+            <li>Envio de notificações importantes diretamente pela plataforma.</li>
+        </ul>
+        <p>Com essas funcionalidades, o EduPortal otimiza o processo de inscrição e comunicação entre instituições e candidatos.</p>
+    </section>
+
+    <!-- Seção: Modelo de Pagamento -->
+    <section class="mb-5">
+        <h2 class="text-laranja">Modelo de Pagamento</h2>
+        <p>O modelo de pagamento do EduPortal é simples e acessível:</p>
+        <ul>
+            <li><strong>Anuidade:</strong> 75.000 Kwanzas por ano;</li>
+        </ul>
+        <p>Esse valor garante acesso completo a todas as funcionalidades da plataforma durante o ano letivo.</p>
+    </section>
+
+    <!-- Seção: Documentos Necessários -->
+    <section class="mb-5">
+        <h2 class="text-laranja">Documentos Necessários</h2>
+        <p>Para cadastrar uma escola privada do ensino médio, serão necessários:</p>
+        <ul>
+            <li>Cópia do Alvará de Funcionamento;</li>
+            <li>Certificado de Reconhecimento pelo Ministério da Educação;</li>
+            <li>Documentos de Identificação do Diretor Responsável.</li>
+        </ul>
+    </section>
+
+    <!-- Seção: Formulário para Interesse e Upload de Documentos -->
+    <section class="mb-5">
+        <h2 class="text-laranja">Cadastro de Interesse</h2>
+        <p>Preencha o formulário abaixo para cadastrar sua instituição no EduPortal. Entraremos em contato para concluir o processo.</p>
+        <form method="post" action="" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="nome_instituicao" class="form-label">Nome da Instituição</label>
+                <input type="text" class="form-control" id="nome_instituicao" name="nome_instituicao" required>
+            </div>
+            <div class="mb-3">
+                <label for="nome_responsavel" class="form-label">Nome do Responsável pelo Cadastro</label>
+                <input type="text" class="form-control" id="nome_responsavel" name="nome_responsavel" required>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email de Contato</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="mb-3">
+                <label for="telefone" class="form-label">Telefone</label>
+                <input type="text" class="form-control" id="telefone" name="telefone" required>
+            </div>
+            <div class="mb-3">
+                <label for="documentos" class="form-label">Documentos (em PDF)</label>
+                <input type="file" class="form-control" id="documentos" name="documentos" accept=".pdf" multiple required>
+            </div>
+            <button type="submit" class="btn btn-laranja">Enviar Cadastro</button>
+        </form>
+    </section>
+</div>
 {% endblock %}
