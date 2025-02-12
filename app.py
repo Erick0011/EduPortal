@@ -1,6 +1,7 @@
-from flask import Flask, session, render_template, redirect, request, url_for, flash
+from flask import Flask, session, render_template, redirect, request, url_for, flash, send_from_directory, abort
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -27,6 +28,7 @@ login_manager.login_message = "Por favor, faça login para acessar esta página.
 
 # Inicializando o banco de dados
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 # config do faker
 faker = Faker('pt_PT')
@@ -170,6 +172,7 @@ class InteresseInstituicao(db.Model):
     email = db.Column(db.String(255), nullable=False)
     telefone = db.Column(db.String(15), nullable=False)
     data_cadastro = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(db.String(20), nullable=False, default='pendente')
     documentos = db.relationship('Documento', backref='interesse', lazy=True)
 
 
@@ -495,7 +498,10 @@ def painel_admin():
     total_alunos = Aluno.query.count()
     alunos_recentes = Aluno.query.order_by(
         Aluno.created_at.desc()).limit(5).all()
-
+    por_concluir = InteresseInstituicao.query.filter_by(
+        status='pendente').all()
+    nao_concluir = InteresseInstituicao.query.filter_by(
+        status='concluido').all()
     agora = datetime.now()
 
     return render_template('painel_admin.html',
@@ -504,7 +510,9 @@ def painel_admin():
                            alunos=alunos,
                            logs_sistema=logs_sistema,
                            total_alunos=total_alunos,
-                           alunos_recentes=alunos_recentes)
+                           alunos_recentes=alunos_recentes,
+                           por_concluir=por_concluir,
+                           nao_concluir=nao_concluir)
 
 
 @app.route('/atualizar_aluno/<int:aluno_id>', methods=['GET', 'POST'])
@@ -663,6 +671,44 @@ def interesse():
         return redirect(url_for('index'))
 
     return redirect(url_for('instituicoes'))
+
+
+@app.route('/admin/download/<int:interesse_id>/<string:arquivo>', methods=['GET'])
+@admin_required
+@login_required
+def baixar_documento(interesse_id, arquivo):
+    try:
+        # Define o diretório base usando o interesse_id
+        directory = os.path.join('static', 'uploads', str(interesse_id))
+        return send_from_directory(directory=directory, path=arquivo, as_attachment=True)
+    except FileNotFoundError:
+        abort(404)
+
+
+@app.route('/admin/concluir/<int:id>', methods=['POST'])
+@admin_required
+@login_required
+def marcar_concluido(id):
+    interesse = InteresseInstituicao.query.get_or_404(id)
+    interesse.status = 'concluido'
+    db.session.commit()
+    flash('Demonstração de interesse marcada como concluída.', 'success')
+    return redirect(url_for('painel_admin') + '#DemonstraçõesDeInteresse')
+
+
+@app.route('/remover_interesse/<int:id>', methods=['POST'])
+def remover_interesse(id):
+    interesse = InteresseInstituicao.query.get_or_404(id)
+
+    for documento in interesse.documentos:
+        db.session.delete(documento)
+
+    db.session.delete(interesse)
+    db.session.commit()
+
+    flash('Interesse e documentos excluídos com sucesso!', 'success')
+    return redirect(url_for('painel_admin') + '#DemonstraçõesDeInteresse')
+
 
 # Debug
 
