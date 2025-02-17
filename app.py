@@ -473,27 +473,25 @@ def portal_estudante():
     return render_template('portal_estudante.html', aluno=current_user)
 
 # Rota do Painel Admin
-
-
 @app.route('/painel_admin', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def painel_admin():
-    # Pegar o parâmetro de pesquisa
-    search = request.args.get('search', '')
+    # Verifica se há dados salvos na sessão
+    alunos = []
+    search = ''
 
-    # Buscar alunos com base na pesquisa (caso haja)
-    if search:
-        alunos = Aluno.query.filter(
-            (Aluno.id.like(f"%{search}%")) |
-            (Aluno.nome_completo.like(f"%{search}%")) |
-            (Aluno.numero_bilhete.like(f"%{search}%"))).all()
+    if 'alunos' in session:
+        alunos_ids = session.pop('alunos')  # Remove os dados após usar
+        alunos = Aluno.query.filter(Aluno.id.in_(alunos_ids)).all()
 
-    else:
-        # Caso não haja pesquisa, listar todos os alunos
+    if 'search' in session:
+        search = session.pop('search')
+
+    # Se não houver dados na sessão, lista todos
+    if not alunos:
         alunos = Aluno.query.all()
 
-    # Buscar dados
     logs_sistema = Log.query.order_by(Log.data_hora.desc()).limit(30).all()
     total_alunos = Aluno.query.count()
     total_instituicoes = Instituicao.query.count()
@@ -511,6 +509,7 @@ def painel_admin():
                            agora=agora,
                            admin=current_user,
                            alunos=alunos,
+                           search=search,
                            logs_sistema=logs_sistema,
                            total_alunos=total_alunos,
                            alunos_recentes=alunos_recentes,
@@ -519,6 +518,33 @@ def painel_admin():
                            total_instituicoes=total_instituicoes,
                            instituicoes=instituicoes
                            )
+
+
+
+
+@app.route('/buscar_alunos', methods=['GET'])
+@login_required
+@admin_required
+def buscar_alunos():
+    search = request.args.get('search', '')
+
+    if search:
+        alunos = Aluno.query.filter(
+            (Aluno.id.like(f"%{search}%")) |
+            (Aluno.nome_completo.like(f"%{search}%")) |
+            (Aluno.numero_bilhete.like(f"%{search}%"))
+        ).all()
+    else:
+        alunos = Aluno.query.all()
+
+    # Salva os dados na sessão
+    session['alunos'] = [aluno.id for aluno in alunos]
+    session['search'] = search
+
+    # Redireciona para a âncora #alunos
+    return redirect(url_for('painel_admin') + '#alunos')
+
+
 
 
 @app.route('/atualizar_aluno/<int:aluno_id>', methods=['GET', 'POST'])

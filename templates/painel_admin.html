@@ -145,7 +145,7 @@
         
             <!-- Campo de Pesquisa -->
             <div class="mb-4">
-                <form method="GET" action="{{ url_for('painel_admin') }}">
+                <form method="GET" action="{{ url_for('buscar_alunos') }}">
                     <input type="text" class="form-control" name="search" placeholder="Pesquisar por ID, Nome ou BI" value="{{ request.args.get('search', '') }}">
                 </form>
             </div>
