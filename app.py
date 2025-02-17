@@ -61,10 +61,14 @@ class Aluno(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     tipo = db.Column(db.String(50), default="aluno", nullable=False)
 
+    # Relacionamento com Inscricao
+    inscricoes = db.relationship('Inscricao', backref='aluno_rel', lazy=True)
+
     # Campos para armazenar os caminhos dos documentos
     frente_bilhete_path = db.Column(db.String(255), nullable=True)
     verso_bilhete_path = db.Column(db.String(255), nullable=True)
     certificado_path = db.Column(db.String(255), nullable=True)
+
 
 #  Instituicao
 
@@ -85,6 +89,7 @@ class Instituicao(UserMixin, db.Model):
         db.DateTime, default=datetime.utcnow, nullable=False)
     data_atualizacao = db.Column(
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    inscricoes = db.relationship('Inscricao', backref='instituicao_rel', lazy=True)
 
     cursos = db.Column(db.String(255), nullable=True)
 
@@ -183,6 +188,24 @@ class Documento(db.Model):
     caminho_arquivo = db.Column(db.String(255), nullable=False)
     interesse_id = db.Column(db.Integer, db.ForeignKey(
         'interesses_instituicoes.id'), nullable=False)
+
+class Inscricao(db.Model):
+    __tablename__ = 'inscricoes'
+    id = db.Column(db.Integer, primary_key=True)
+    aluno_id = db.Column(db.Integer, db.ForeignKey('aluno.id'), nullable=False)
+    instituicao_id = db.Column(db.Integer, db.ForeignKey('instituicao.id'), nullable=False)
+    status = db.Column(db.String(20), nullable=False, default='Pendente')
+    data_inscricao = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relacionamentos
+    aluno = db.relationship('Aluno', backref='inscricoes_rel', lazy=True)
+    instituicao = db.relationship('Instituicao', backref='inscricoes_rel', lazy=True)
+
+
+    def __repr__(self):
+        return f"<Inscricao {self.id} - Aluno: {self.aluno_id} | Escola: {self.instituicao_id}>"
+
+
 
 
 @login_manager.user_loader
@@ -464,13 +487,117 @@ def login():
 
     return render_template('login.html')
 
+# Função para verificar se o aluno tem todos os documentos
+def verificar_documentos_completos(aluno):
+    return (
+        aluno.frente_bilhete_path is not None and
+        aluno.verso_bilhete_path is not None and
+        aluno.certificado_path is not None
+    )
 
+# Rota para listar as inscrições e escolas
 @app.route('/portal_estudante')
 @login_required
-@aluno_required
 def portal_estudante():
+    # Verifica se o usuário é um aluno
+    aluno = Aluno.query.filter_by(id=current_user.id).first()
+    if not aluno:
+        flash('Apenas alunos podem acessar esta página.', 'danger')
+        return redirect(url_for('index'))
+
+    # Verifica se os documentos estão completos
+    documentos_completos = verificar_documentos_completos(aluno)
+
+    # Busca as inscrições do aluno usando o novo backref
+    inscricoes = aluno.inscricoes_rel  # Alterado de 'inscricoes' para 'inscricoes_rel'
+
+    # Busca todas as escolas disponíveis
+    escolas = Instituicao.query.all()
+
+    return render_template(
+        'portal_estudante.html',
+        documentos_completos=documentos_completos,
+        inscricoes=inscricoes,
+        escolas=escolas,
+        aluno=current_user
+    )
+
+# Rota para criar uma inscrição
+@app.route('/criar_inscricao', methods=['POST'])
+@login_required
+def criar_inscricao():
+    # Verifica se o usuário é um aluno
+    aluno = Aluno.query.filter_by(id=current_user.id).first()
+    if not aluno:
+        flash('Apenas alunos podem fazer inscrições.', 'danger')
+        return redirect(url_for('portal_estudante'))
+
+    # Verifica se o aluno tem todos os documentos
+    if not verificar_documentos_completos(aluno):
+        flash('Complete todos os documentos para fazer a inscrição.', 'danger')
+        return redirect(url_for('portal_estudante'))
+
+    # Pega a escola selecionada no formulário
+    escola_id = request.form.get('escola')
+
+    # Verifica se a escola é válida
+    escola = Instituicao.query.get(escola_id)
+    if not escola:
+        flash('Escola inválida.', 'danger')
+        return redirect(url_for('portal_estudante'))
+
+    # Verifica se o aluno já tem inscrição na escola usando o relacionamento ajustado
+    inscricao_existente = Inscricao.query.filter_by(
+        aluno_id=aluno.id,
+        instituicao_id=escola_id
+    ).first()
+
+    if inscricao_existente:
+        flash('Você já se inscreveu nesta escola.', 'warning')
+        return redirect(url_for('portal_estudante'))
+
+    # Cria a inscrição
+    nova_inscricao = Inscricao(
+        aluno_id=aluno.id,
+        instituicao_id=escola_id,
+        status='Pendente'
+    )
+    db.session.add(nova_inscricao)
+    db.session.commit()
+
+    flash('Inscrição realizada com sucesso!', 'success')
+    return redirect(url_for('portal_estudante'))
+
+
+# Rota para cancelar uma inscrição
+@app.route('/cancelar_inscricao/<int:inscricao_id>', methods=['POST'])
+@login_required
+def cancelar_inscricao(inscricao_id):
+    # Verifica se a inscrição é do aluno logado e se está pendente
+    inscricao = Inscricao.query.filter_by(
+        id=inscricao_id,
+        aluno_id=current_user.id,
+        status='Pendente'
+    ).first()
+
+    if not inscricao:
+        flash('Inscrição não encontrada ou não pode ser cancelada.', 'danger')
+        return redirect(url_for('portal_estudante'))
+
+    # Deleta a inscrição
+    db.session.delete(inscricao)
+    db.session.commit()
+
+    flash('Inscrição cancelada com sucesso.', 'success')
+    return redirect(url_for('portal_estudante'))
+
+
+#@app.route('/portal_estudante')
+#@login_required
+#@aluno_required
+#def portal_estudante():
     # Página do portal do estudante
-    return render_template('portal_estudante.html', aluno=current_user)
+    #return render_template('portal_estudante.html', aluno=current_user)
 
 # Rota do Painel Admin
 @app.route('/painel_admin', methods=['GET', 'POST'])

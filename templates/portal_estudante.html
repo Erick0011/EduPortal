@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<ht lang="en">
+<html lang="en">
 
     <head>
         <meta charset="UTF-8">
@@ -125,34 +125,59 @@
                 </div>
 
                 <!-- Seção de Inscrições -->
-                <div class="tab-pane fade" id="inscricoes" role="tabpanel">
-                    <h3 class="mb-3">Minhas Inscrições</h3>
-                    <table class="table table-bordered">
-                        <thead class="table-primary">
-                            <tr>
-                                <th>Escola</th>
-                                <th>Status</th>
-                                <th>Data da Inscrição</th>
-                                <th>Ação</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Escola A</td>
-                                <td>Pendente</td>
-                                <td>10/12/2024</td>
-                                <td><button class="btn btn-danger btn-sm">Cancelar</button></td>
-                            </tr>
-                            <tr>
-                                <td>Escola B</td>
-                                <td>Aprovada</td>
-                                <td>08/12/2024</td>
-                                <td>-</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <button class="btn btn-primary">Nova Inscrição</button>
-                </div>
+                <!-- Formulário para Nova Inscrição -->
+                <h2>Nova Inscrição</h2>
+                <form action="{{ url_for('criar_inscricao') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="escola" class="form-label">Selecione a Escola:</label>
+                        <select class="form-select" id="escola" name="escola" required>
+                            <option value="">Escolha uma escola...</option>
+                            {% for escola in escolas %}
+                            <option value="{{ escola.id }}">{{ escola.nome_instituicao }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary"
+                            {% if not documentos_completos %} disabled {% endif %}>
+                        Nova Inscrição
+                    </button>
+                    {% if not documentos_completos %}
+                    <small class="text-danger">* Complete todos os documentos para se inscrever.</small>
+                    {% endif %}
+                </form>
+
+                <hr>
+
+                <!-- Lista de Inscrições -->
+                <h2>Suas Inscrições</h2>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Escola</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inscricao in inscricoes %}
+                        <tr>
+                            <td>{{ inscricao.instituicao.nome_instituicao }}</td>
+                            <td>{{ inscricao.status }}</td>
+                            <td>
+                                {% if inscricao.status == 'Pendente' %}
+                                <form action="{{ url_for('cancelar_inscricao', inscricao_id=inscricao.id) }}" method="POST" style="display:inline;">
+                                    <button class="btn btn-danger btn-sm">Cancelar</button>
+                                </form>
+                                {% else %}
+                                <span class="text-muted">Ação indisponível</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
 
                 <!-- Perfil do Estudante -->
                 <div class="tab-pane fade" id="perfil" role="tabpanel">
