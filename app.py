@@ -523,7 +523,6 @@ def portal_estudante():
         aluno=current_user
     )
 
-
 @app.route('/editar_perfil', methods=['GET', 'POST'])
 @aluno_required
 @login_required
