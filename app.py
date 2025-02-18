@@ -523,6 +523,34 @@ def portal_estudante():
         aluno=current_user
     )
 
+
+@app.route('/editar_perfil', methods=['GET', 'POST'])
+@aluno_required
+@login_required
+def editar_perfil():
+    aluno = Aluno.query.get(current_user.id)
+
+    if request.method == 'POST':
+        # Obtenha os dados do formulário
+        email = request.form.get('email')
+        telefone = request.form.get('telefone')
+        senha = request.form.get('senha')
+
+        # Atualize apenas os campos que podem ser editados
+        aluno.email = email
+        aluno.telefone = telefone
+
+        # Verifique se o campo de senha foi preenchido
+        if senha:
+            aluno.senha = generate_password_hash(senha)
+
+        # Salve as alterações no banco de dados
+        db.session.commit()
+        flash('Informações atualizadas com sucesso!', 'success')
+        return redirect(url_for('editar_perfil'))
+
+    return redirect(url_for('portal_estudante'))
+
 # Rota para criar uma inscrição
 @app.route('/criar_inscricao', methods=['POST'])
 @aluno_required
