@@ -277,18 +277,19 @@
                 <!-- Perfil das Escolas -->
                 <div class="tab-pane fade" id="escolas" role="tabpanel">
                     <h3 class="mb-3">Explorar Escolas</h3>
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <a href="escola-a.html" target="_blank">
-                                <h5 class="card-title">Escola A</h5>
-                            </a>
-                            <p class="card-text">Localização: Luanda</p>
-                            <p class="card-text">Cursos Disponíveis: Técnico em Informática, Gestão de Recursos Humanos
-                            </p>
-                            <button class="btn btn-primary btn-sm">Inscrever-se</button>
+                        {% for escola in escolas %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <a href="{{ escola.link }}" target="_blank">
+                                    <h5 class="card-title">{{ escola.nome_instituicao }}</h5>
+                                </a>
+                                <p class="card-text">Localização: {{ escola.localizacao }}, {{ escola.cidade }}</p>
+                                <p class="card-text">Cursos Disponíveis: {{ escola.cursos }}</p>
+                                <button class="btn btn-primary btn-sm">Inscrever-se</button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="card mb-3">
+                        {% endfor %}
+                    <!--<div class="card mb-3">
                         <div class="card-body">
                             <h5 class="card-title">Escola B</h5>
                             <p class="card-text">Localização: Benguela</p>
@@ -296,7 +297,7 @@
                                 Biológicas</p>
                             <button class="btn btn-primary btn-sm">Inscrever-se</button>
                         </div>
-                    </div>
+                    </div>-->
                 </div>
             </div>
         </div>
