@@ -497,6 +497,7 @@ def verificar_documentos_completos(aluno):
 
 # Rota para listar as inscrições e escolas
 @app.route('/portal_estudante')
+@aluno_required
 @login_required
 def portal_estudante():
     # Verifica se o usuário é um aluno
@@ -522,20 +523,48 @@ def portal_estudante():
         aluno=current_user
     )
 
+@app.route('/editar_perfil', methods=['GET', 'POST'])
+@aluno_required
+@login_required
+def editar_perfil():
+    aluno = Aluno.query.get(current_user.id)
+
+    if request.method == 'POST':
+        # Obtenha os dados do formulário
+        email = request.form.get('email')
+        telefone = request.form.get('telefone')
+        senha = request.form.get('senha')
+
+        # Atualize apenas os campos que podem ser editados
+        aluno.email = email
+        aluno.telefone = telefone
+
+        # Verifique se o campo de senha foi preenchido
+        if senha:
+            aluno.senha = generate_password_hash(senha)
+
+        # Salve as alterações no banco de dados
+        db.session.commit()
+        flash('Informações atualizadas com sucesso!', 'success')
+        return redirect(url_for('editar_perfil'))
+
+    return redirect(url_for('portal_estudante'))
+
 # Rota para criar uma inscrição
 @app.route('/criar_inscricao', methods=['POST'])
+@aluno_required
 @login_required
 def criar_inscricao():
     # Verifica se o usuário é um aluno
     aluno = Aluno.query.filter_by(id=current_user.id).first()
     if not aluno:
         flash('Apenas alunos podem fazer inscrições.', 'danger')
-        return redirect(url_for('portal_estudante'))
+        return redirect(url_for('portal_estudante') + '#inscricoes')
 
     # Verifica se o aluno tem todos os documentos
     if not verificar_documentos_completos(aluno):
         flash('Complete todos os documentos para fazer a inscrição.', 'danger')
-        return redirect(url_for('portal_estudante'))
+        return redirect(url_for('portal_estudante') + '#inscricoes')
 
     # Pega a escola selecionada no formulário
     escola_id = request.form.get('escola')
@@ -544,7 +573,7 @@ def criar_inscricao():
     escola = Instituicao.query.get(escola_id)
     if not escola:
         flash('Escola inválida.', 'danger')
-        return redirect(url_for('portal_estudante'))
+        return redirect(url_for('portal_estudante') + '#inscricoes')
 
     # Verifica se o aluno já tem inscrição na escola usando o relacionamento ajustado
     inscricao_existente = Inscricao.query.filter_by(
@@ -554,7 +583,7 @@ def criar_inscricao():
 
     if inscricao_existente:
         flash('Você já se inscreveu nesta escola.', 'warning')
-        return redirect(url_for('portal_estudante'))
+        return redirect(url_for('portal_estudante') + '#inscricoes')
 
     # Cria a inscrição
     nova_inscricao = Inscricao(
@@ -566,12 +595,13 @@ def criar_inscricao():
     db.session.commit()
 
     flash('Inscrição realizada com sucesso!', 'success')
-    return redirect(url_for('portal_estudante'))
+    return redirect(url_for('portal_estudante') + '#inscricoes')
 
 
 # Rota para cancelar uma inscrição
 @app.route('/cancelar_inscricao/<int:inscricao_id>', methods=['POST'])
 @login_required
+@aluno_required
 def cancelar_inscricao(inscricao_id):
     # Verifica se a inscrição é do aluno logado e se está pendente
     inscricao = Inscricao.query.filter_by(
@@ -582,14 +612,14 @@ def cancelar_inscricao(inscricao_id):
 
     if not inscricao:
         flash('Inscrição não encontrada ou não pode ser cancelada.', 'danger')
-        return redirect(url_for('portal_estudante'))
+        return redirect(url_for('portal_estudante') + '#inscricoes')
 
     # Deleta a inscrição
     db.session.delete(inscricao)
     db.session.commit()
 
     flash('Inscrição cancelada com sucesso.', 'success')
-    return redirect(url_for('portal_estudante'))
+    return redirect(url_for('portal_estudante') + '#inscricoes')
 
 
 #@app.route('/portal_estudante')
