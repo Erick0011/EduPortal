@@ -143,7 +143,8 @@
             </p>
             
             <!-- Formulário de Contato -->
-            <form action="enviar_contato.php" method="POST">
+            <form action="{{ url_for('enviar_mensagem') }}" method="POST">
+                <input type="hidden" name="tipo" value="contato">
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <input type="text" class="form-control" placeholder="Seu Nome" name="nome" required>

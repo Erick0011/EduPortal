@@ -204,6 +204,20 @@ class Inscricao(db.Model):
         return f"<Inscricao {self.id} - Aluno: {self.aluno_id} | Escola: {self.instituicao_id}>"
 
 
+class Mensagem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    mensagem = db.Column(db.Text, nullable=False)
+    tipo = db.Column(db.String(20), nullable=False)  # 'suporte' ou 'contato'
+
+    usuario_id = db.Column(db.Integer, nullable=True)  # ID do aluno ou funcionário
+    tipo_usuario = db.Column(db.String(20), nullable=True)  # 'aluno' ou 'funcionario'
+
+    lida = db.Column(db.Boolean, default=False)  # Estado da mensagem
+
+    def __repr__(self):
+        return f'<Mensagem {self.id} - {self.tipo_usuario} - {"Lida" if self.lida else "Não Lida"}>'
 
 
 @login_manager.user_loader
@@ -266,6 +280,55 @@ def aluno_required(f):
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route('/enviar_mensagem', methods=['POST'])
+def enviar_mensagem():
+    tipo = request.form.get("tipo")  # "suporte" ou "contato"
+
+    # Se o usuário estiver logado, preenche automaticamente os dados
+    if current_user.is_authenticated:
+        nome = current_user.nome_completo
+        email = current_user.email
+        tipo_usuario = current_user.tipo  # 'aluno' ou 'funcionario'
+        usuario_id = current_user.id
+    else:
+        nome = request.form.get("nome")
+        email = request.form.get("email")
+        tipo_usuario = "visitante"  # Para usuários não autenticados
+        usuario_id = None
+
+    mensagem_texto = request.form.get("mensagem")
+
+    if not mensagem_texto.strip():
+        flash("A mensagem não pode estar vazia.", "error")
+        return redirect(request.referrer or url_for('index'))
+
+    # Criar e salvar a mensagem no banco de dados
+    nova_mensagem = Mensagem(
+        nome=nome,
+        email=email,
+        mensagem=mensagem_texto,
+        tipo=tipo,
+        usuario_id=usuario_id,
+        tipo_usuario=tipo_usuario
+    )
+
+    db.session.add(nova_mensagem)
+    db.session.commit()
+
+    flash("Mensagem enviada com sucesso!", "success")
+
+    # Redirecionamento após o envio
+    if tipo == "suporte":
+        if current_user.is_authenticated:
+            if current_user.tipo == "aluno":
+                return redirect(url_for("portal_instituicao"))
+            elif current_user.tipo == "funcionario":
+                return redirect(url_for("portal_estudante"))
+        return redirect(url_for("index"))  # Caso algo dê errado
+
+    return redirect(url_for("index"))  # Para mensagens de contato, volta ao início
 
 
 @app.route('/cadastro', methods=['GET', 'POST'])

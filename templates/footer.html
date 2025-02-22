@@ -1,0 +1,8 @@
+<footer class="text-center py-3">
+    <p><strong>Edu<span style="color: blue;">Portal</span><span style="color: orange;">.</span></strong></p>
+    <p>Email: <a href="mailto:suporte@eduportal.com">suporte@eduportal.com</a></p>
+
+    {% if current_user.is_authenticated %}
+        <a href="{{ url_for('suporte') }}" class="btn btn-outline-info">Precisa de Suporte?</a>
+    {% endif %}
+</footer>

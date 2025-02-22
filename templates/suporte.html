@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tela - EduPortal</title>
+
+
+    <!-- Link para o Bootstrap -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+
+</head>
+<body>
+    {% include "modal.html" %}
+    <!-- Tela de  -->
+    <div class="d-flex justify-content-center align-items-center vh-100" style="background-color: #004A8D; position: relative;">
+        <!-- Card -->
+        <div class="card p-4 shadow position-relative" style="width: 100%; max-width: 400px; border-radius: 10px;">
+            <!-- Botão para voltar -->
+            <a href="{{ url_for('index') }}" class="btn-close position-absolute top-0 end-0 m-3"
+               style="background-color: #f8f9fa; padding: 10px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid #004A8D; width: 40px; height: 40px;"
+               aria-label="Voltar"></a>
+
+            <!-- Logo do EduPortal -->
+            <h2 class="text-center mb-4" style="color: #004A8D; font-family: 'Arial', sans-serif; font-weight: bold;">
+                Edu<span style="color: #FF7A00;">Portal</span>
+            </h2>
+            <form action="{{ url_for('enviar_mensagem') }}" method="POST">
+                <input type="hidden" name="tipo" value="suporte">
+
+                <div class="mb-3">
+                    <label for="mensagem" class="form-label">Descreva seu problema</label>
+                    <textarea class="form-control" name="mensagem" rows="4" required></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-warning">Enviar Suporte</button>
+            </form>
+        </div>
+
+    </div>
+
+
+
+
+        <!-- Script Bootstrap -->
+
+        <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+
+
+</body>
+</html>
