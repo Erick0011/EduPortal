@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Painel Administrativo</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     <style>
         body {
@@ -16,6 +16,9 @@
             width: 250px;
             background-color: #007bff;
             color: white;
+            position: fixed; /* 🔹 Fixa a sidebar na tela */
+            height: 100vh;
+            overflow-y: auto;
         }
 
         .sidebar .nav-link {
@@ -30,8 +33,10 @@
 
         .content {
             flex: 1;
+            margin-left: 250px; /* 🔹 Garante espaço ao lado da sidebar */
             padding: 20px;
             background-color: #f8f9fa;
+            width: 100%;
         }
 
         .sidebar-title {
@@ -45,26 +50,27 @@
 
 <body>
     {% include "modal.html" %}
+    <!-- Sidebar fixa -->
     <div class="sidebar d-flex flex-column">
-        <div class="sidebar-title">Admin Dashboard</div>
+        <div class="sidebar-title">Painel Administrativo</div>
         <nav class="nav flex-column">
-            <a class="nav-link active" href="#dashboard" data-bs-toggle="tab">Dashboard</a>
+            <a class="nav-link" href="#dashboard" data-bs-toggle="tab">Dashboard</a>
             <a class="nav-link" href="#alunos" data-bs-toggle="tab">Alunos</a>
             <a class="nav-link" href="#instituicoes" data-bs-toggle="tab">Instituições</a>
-            <a class="nav-link" href="#DemonstraçõesDeInteresse" data-bs-toggle="tab">Demonstrações de Interesse</a>
+            <a class="nav-link" href="#DemonstraçõesDeInteresse" data-bs-toggle="tab">Demonstrações De Interesse</a>
             <a class="nav-link" href="#criar-instituicoes" data-bs-toggle="tab">Criar Instituições</a>
             <a class="nav-link" href="#mensagens" data-bs-toggle="tab">Mensagens</a>
             <form action="/logout" method="POST" style="margin: 0;">
                 <button type="submit" class="nav-link btn btn-link text-start" style="color: red; text-decoration: none; padding: 15px;">Sair</button>
-            </form> 
+            </form>
         </nav>
     </div>
 
+    <!-- Conteúdo com abas -->
     <div class="content tab-content">
-        <!-- Tab Dashboard -->
-        <div class="tab-pane fade show active" id="dashboard">
+        <div class="tab-pane fade" id="dashboard">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3>Bem-vindo novamente, {{ admin.nome_admin }}!</h3>
+                <h3>Bem-vindo novamente, {{ admin.nome_completo }}!</h3>
                 <div id="datetime" class="fw-bold"><p>{{ agora.strftime('%d/%m/%Y') }}</p></div>
             </div>
 
@@ -124,7 +130,7 @@
                         <div class="h-64 overflow-y-scroll border-t pt-2">
                             {% for log in logs_sistema %}
                                 <p class="text-sm text-gray-700">
-                                    <strong>{{ log.data_hora.strftime('%d/%m/%Y %H:%M:%S') }}</strong> - 
+                                    <strong>{{ log.data_hora.strftime('%d/%m/%Y %H:%M:%S') }}</strong> -
                                     {{ log.mensagem }}<br>
                                     <small>Usuário: {{ log.tipo_usuario }} (ID: {{ log.usuario_id }})</small>
                                 </p>
@@ -137,19 +143,17 @@
                 </div>
             </div>
         </div>
-
-        <!-- Tab Alunos -->
         <div class="tab-pane fade" id="alunos">
-            <h1>Alunos</h1>
+             <h1>Alunos</h1>
             <p>Gestão de alunos.</p>
-        
+
             <!-- Campo de Pesquisa -->
             <div class="mb-4">
                 <form method="GET" action="{{ url_for('buscar_alunos') }}">
                     <input type="text" class="form-control" name="search" placeholder="Pesquisar por ID, Nome ou BI" value="{{ request.args.get('search', '') }}">
                 </form>
             </div>
-        
+
             <!-- Tabela de Alunos -->
             <table class="table">
                 <thead>
@@ -174,7 +178,7 @@
                     {% endfor %}
                 </tbody>
             </table>
-        
+
             <!-- Modal de Visualização e Edição -->
             {% for aluno in alunos %}
                 <div class="modal fade" id="visualizarModal{{ aluno.id }}" tabindex="-1" aria-labelledby="visualizarModalLabel{{ aluno.id }}" aria-hidden="true">
@@ -270,12 +274,12 @@
                                             <option value="uige" {% if aluno.provincia == 'uige' %}selected{% endif %}>Uíge</option>
                                             <option value="zaire" {% if aluno.provincia == 'zaire' %}selected{% endif %}>Zaire</option>
                                         </select>
-                                        
-                                        
+
+
                                     </div>
                                     <button type="submit" class="btn btn-success">Salvar Alterações</button>
                                 </form>
-                                
+
                                 <a href="{{ url_for('deletar_aluno', aluno_id=aluno.id) }}" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja excluir este aluno?')">Excluir</a>
                             </div>
                         </div>
@@ -283,10 +287,8 @@
                 </div>
             {% endfor %}
         </div>
-        
-
         <div class="tab-pane fade" id="instituicoes">
-            <h1>Instituições</h1>
+           <h1>Instituições</h1>
             <p>Gestão de instituições.</p>
              <!-- Tabela de Alunos -->
              <table class="table">
@@ -309,12 +311,11 @@
                     {% endfor %}
                 </tbody>
             </table>
-
         </div>
         <div class="tab-pane fade" id="DemonstraçõesDeInteresse">
             <div class="container mt-5">
                 <h2 class="text-center mb-4">Demonstrações de Interesse</h2>
-            
+
                 <!-- Por Concluir -->
                 <h3 class="text-primary">Por Concluir</h3>
                 <div class="row">
@@ -327,7 +328,7 @@
                                 <p class="card-text"><strong>Responsável:</strong> {{ interesse.nome_responsavel }}</p>
                                 <p class="card-text"><strong>Telefone:</strong> {{ interesse.telefone }}</p>
                                 <p class="card-text"><strong>Data:</strong> {{ interesse.data_cadastro.strftime('%d/%m/%Y') }}</p>
-            
+
                                 <h6>Documentos:</h6>
                                 <ul class="list-group mb-3">
                                     {% for documento in interesse.documentos %}
@@ -337,7 +338,7 @@
                                     </li>
                                     {% endfor %}
                                 </ul>
-                                
+
                                 <form action="{{ url_for('marcar_concluido', id=interesse.id) }}" method="post">
                                     <button class="btn btn-success" type="submit">Concluído</button>
                                 </form>
@@ -346,7 +347,7 @@
                     </div>
                     {% endfor %}
                 </div>
-            
+
                 <!-- Não Concluir -->
                 <h3 class="text-secondary mt-5">Concluido</h3>
                 <div class="row">
@@ -359,7 +360,7 @@
                                 <p class="card-text"><strong>Responsável:</strong> {{ interesse.nome_responsavel }}</p>
                                 <p class="card-text"><strong>Telefone:</strong> {{ interesse.telefone }}</p>
                                 <p class="card-text"><strong>Data:</strong> {{ interesse.data_cadastro.strftime('%d/%m/%Y') }}</p>
-            
+
                                 <h6>Documentos:</h6>
                                 <ul class="list-group mb-3">
                                     {% for documento in interesse.documentos %}
@@ -369,7 +370,7 @@
                                     </li>
                                     {% endfor %}
                                 </ul>
-                                
+
                                 <form action="{{ url_for('remover_interesse', id=interesse.id) }}" method="post" onsubmit="return confirm('Tem certeza que deseja remover este interesse e seus documentos?');">
                                     <button class="btn btn-danger" type="submit">Remover</button>
                                 </form>
@@ -379,7 +380,6 @@
                     {% endfor %}
                 </div>
             </div>
-            
         </div>
         <div class="tab-pane fade" id="criar-instituicoes">
             <div class="container mt-5">
@@ -423,29 +423,37 @@
             <p>Visualização e resposta de mensagens.</p>
         </div>
     </div>
+
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Verifica se há um hash na URL
-            var hash = window.location.hash;
+        document.addEventListener("DOMContentLoaded", function () {
+            // Obtém o hash da URL (ex: #alunos)
+            let hash = window.location.hash;
             if (hash) {
-                var tabTrigger = document.querySelector('a[href="' + hash + '"]');
-                if (tabTrigger) {
-                    var tab = new bootstrap.Tab(tabTrigger);
-                    tab.show();  // Exibe a aba correspondente ao hash
+                let targetTab = document.querySelector(hash);
+                let targetNav = document.querySelector(`.nav-link[href="${hash}"]`);
+
+                if (targetTab && targetNav) {
+                    document.querySelectorAll(".tab-pane").forEach(tab => tab.classList.remove("show", "active"));
+                    document.querySelectorAll(".nav-link").forEach(nav => nav.classList.remove("active"));
+
+                    targetTab.classList.add("show", "active");
+                    targetNav.classList.add("active");
                 }
+            } else {
+                // Se não houver hash, ativa a aba inicial (Dashboard)
+                document.querySelector("#dashboard").classList.add("show", "active");
+                document.querySelector(`.nav-link[href="#dashboard"]`).classList.add("active");
             }
-    
-            // Atualiza o hash na URL quando o usuário clica em uma aba
-            var tabLinks = document.querySelectorAll('.nav-link');
-            tabLinks.forEach(function (link) {
-                link.addEventListener('click', function () {
-                    history.pushState(null, null, this.getAttribute('href'));
+
+            // Atualiza o hash ao clicar em uma aba
+            document.querySelectorAll('.nav-link').forEach(nav => {
+                nav.addEventListener("click", function () {
+                    window.location.hash = this.getAttribute("href");
                 });
             });
         });
     </script>
-
-    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
 </body>
 
 </html>

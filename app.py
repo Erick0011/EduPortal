@@ -1,7 +1,6 @@
 from flask import Flask, session, render_template, redirect, request, url_for, flash, send_from_directory, abort
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -28,7 +27,6 @@ login_manager.login_message = "Por favor, faça login para acessar esta página.
 
 # Inicializando o banco de dados
 db = SQLAlchemy(app)
-migrate = Migrate(app, db)
 
 # config do faker
 faker = Faker('pt_PT')
