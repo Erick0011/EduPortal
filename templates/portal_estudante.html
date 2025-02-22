@@ -85,7 +85,16 @@
             <div class="tab-content">
                 <!-- Painel Inicial -->
                 <div class="tab-pane fade show active" id="inicio" role="tabpanel">
-                    <h2 class="mb-3">Bem-vindo {{ aluno.nome_completo }}</h2>
+                    <h2 class="mb-3">
+                        {% if aluno.genero|capitalize == 'Masculino' %}
+                            Bem-vindo {{ aluno.nome_completo.split()[0] }}
+                        {% elif aluno.genero|capitalize == 'Feminino' %}
+                            Bem-vinda {{ aluno.nome_completo.split()[0] }}
+                        {% else %}
+                            Bem-vindo(a) {{ aluno.nome_completo.split()[0] }}
+                        {% endif %}
+                    </h2>
+
                     <p>Explore as funcionalidades disponíveis para gerenciar suas inscrições e conhecer mais sobre as
                         escolas.</p>
                     
@@ -151,10 +160,10 @@
                 <!-- Lista de Inscrições -->
                 <h2>Suas Inscrições</h2>
                 <table class="table table-bordered">
-                    <thead>
+                    <thead class="table-primary">
                         <tr>
                             <th>Escola</th>
-                            <th>Status</th>
+                             <th>Status</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
@@ -295,6 +304,27 @@
                 </div>
             </div>
         </div>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                // Recupera a última aba acessada do localStorage
+                let activeTab = localStorage.getItem("activeTab");
+
+                // Se houver uma aba salva, ativa ela
+                if (activeTab) {
+                    let tabElement = document.querySelector(`a[href="${activeTab}"]`);
+                    if (tabElement) {
+                        new bootstrap.Tab(tabElement).show();
+                    }
+                }
+
+                // Escuta mudanças de abas e salva a aba ativa
+                document.querySelectorAll('.nav-link[data-bs-toggle="tab"]').forEach(tab => {
+                    tab.addEventListener("shown.bs.tab", function (event) {
+                        localStorage.setItem("activeTab", event.target.getAttribute("href"));
+                    });
+                });
+            });
+        </script>
 
         <!-- Script Bootstrap -->
     <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>

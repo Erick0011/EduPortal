@@ -285,17 +285,17 @@ def cadastro():
 
             # Coletar outros dados do formulário Preencha
             numero_bilhete = request.form['numeroBilhete'].capitalize()
-            genero = request.form['genero']
+            genero = request.form['genero'].capitalize()
             email = request.form['email']
             senha = request.form['senha']
-            instituicao_9_classe = request.form['instituicao9']
+            instituicao_9_classe = request.form['instituicao9'].capitalize()
             ano_conclusao = request.form['anoConclusao']
             media_final = request.form['mediaFinal']
             turno_preferido = request.form['turno']
             telefone = request.form['telefone']
-            municipio = request.form['municipio']
-            bairro = request.form['bairro']
-            provincia = request.form['provincia']
+            municipio = request.form['municipio'].capitalize()
+            bairro = request.form['bairro'].capitalize()
+            provincia = request.form['provincia'].capitalize()
 
             # Hash da senha para segurança
             senha_hash = generate_password_hash(senha)

@@ -110,7 +110,7 @@
                         <ul class="list-unstyled">
                             {% for aluno in alunos_recentes %}
                                 <li class="mb-2">
-                                    <strong>{{ aluno.nome_completo }}</strong><br>
+                                    <strong>{{ aluno.nome_completo.split()[0] }}</strong><br>
                                     <small>{{ aluno.created_at.strftime('%d/%m/%Y') }}</small>
                                 </li>
                             {% endfor %}
