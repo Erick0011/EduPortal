@@ -101,7 +101,7 @@ class Instituicao(UserMixin, db.Model):
         return f'<Instituicao {self.nome_instituicao}>'
 
 
-class Funcionario(db.Model):
+class Funcionario(UserMixin, db.Model):
     __tablename__ = 'funcionario'
     id = db.Column(db.Integer, primary_key=True)
     nome_completo = db.Column(db.String(255), nullable=False)
@@ -471,7 +471,7 @@ def login():
             # Redirecionamento baseado no tipo
             if user_type == "aluno":
                 return redirect(url_for('portal_estudante'))
-            elif user_type == "instituicao":
+            elif user_type == "funcionario":
                 return redirect(url_for('portal_instituicao'))
             elif user_type == "admin":
                 return redirect(url_for('painel_admin'))
@@ -799,11 +799,11 @@ def deletar_aluno(aluno_id):
     return redirect(url_for('painel_admin') + '#alunos')
 
 
-@app.route('/instituicao_dashboard')
+@app.route('/portal_instituicao')
 @login_required
 @funcionario_required
-def instituicao_dashboard():
-    return render_template('instituicao_dashboard.html')
+def portal_instituicao():
+    return render_template('portal_instituicao.html', user=current_user)
 
 
 @app.route('/instituicoes')

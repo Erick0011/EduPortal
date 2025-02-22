@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel dos Funcionários</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <style>
+        body {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #007bff;
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            padding-top: 10px;
+        }
+
+        .sidebar .nav-link {
+            color: white;
+        }
+
+        .sidebar .nav-link.active,
+        .sidebar .nav-link:hover {
+            background-color: #ffa500;
+            color: white;
+        }
+
+        .content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            width: 100%;
+        }
+
+        .brand {
+            text-align: center;
+            font-size: 1.7rem;
+            font-weight: bold;
+            padding: 15px;
+        }
+
+        .brand .edu {
+            color: #ffffff;
+        }
+
+        .brand .portal {
+            color: #ffa500;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar fixa -->
+    <div class="sidebar d-flex flex-column">
+        <div class="brand">
+            <span class="edu">Edu</span><span class="portal">Portal</span>
+        </div>
+        <nav class="nav flex-column">
+            <a class="nav-link" href="#dashboard" data-bs-toggle="tab">Dashboard</a>
+            {% if user.permissao == 'master' %}
+            <a class="nav-link" href="#instituicao" data-bs-toggle="tab">Informações da Instituição</a>
+            {% endif %}
+            <a class="nav-link" href="#inscricoes" data-bs-toggle="tab">Gerir Inscrições</a>
+            {% if user.permissao == 'master' %}
+            <a class="nav-link" href="#funcionarios" data-bs-toggle="tab">Gerir Funcionários</a>
+            {% endif %}
+            <a class="nav-link" href="#suporte" data-bs-toggle="tab">Suporte</a>
+            <a class="nav-link" href="#perfil" data-bs-toggle="tab">Perfil</a>
+            <form action="/logout" method="POST" style="margin: 0;">
+                <button type="submit" class="nav-link btn btn-link text-start" style="color: red; text-decoration: none; padding: 15px;">Sair</button>
+            </form>
+        </nav>
+    </div>
+
+    <!-- Conteúdo com abas -->
+    <div class="content tab-content">
+        <div class="tab-pane fade" id="dashboard">
+            <h1>Dashboard</h1>
+            <p>Visão geral da instituição.</p>
+        </div>
+        {% if user.permissao == 'master' %}
+        <div class="tab-pane fade" id="instituicao">
+            <h1>Informações da Instituição</h1>
+            <p>Detalhes sobre a instituição.</p>
+        </div>
+        {% endif %}
+        <div class="tab-pane fade" id="inscricoes">
+            <h1>Gerir Inscrições</h1>
+            <p>Controle e acompanhamento de inscrições.</p>
+        </div>
+        {% if user.permissao == 'master' %}
+        <div class="tab-pane fade" id="funcionarios">
+            <h1>Gerir Funcionários</h1>
+            <p>Gestão de funcionários da instituição.</p>
+        </div>
+        {% endif %}
+        <div class="tab-pane fade" id="suporte">
+            <h1>Suporte</h1>
+            <p>Ajuda e suporte técnico.</p>
+        </div>
+        <div class="tab-pane fade" id="perfil">
+            <h1>Perfil</h1>
+            <p>Configurações da conta.</p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let hash = window.location.hash;
+            if (hash) {
+                let targetTab = document.querySelector(hash);
+                let targetNav = document.querySelector(`.nav-link[href="${hash}"]`);
+                
+                if (targetTab && targetNav) {
+                    document.querySelectorAll(".tab-pane").forEach(tab => tab.classList.remove("show", "active"));
+                    document.querySelectorAll(".nav-link").forEach(nav => nav.classList.remove("active"));
+
+                    targetTab.classList.add("show", "active");
+                    targetNav.classList.add("active");
+                }
+            } else {
+                document.querySelector("#dashboard").classList.add("show", "active");
+                document.querySelector(`.nav-link[href="#dashboard"]`).classList.add("active");
+            }
+
+            document.querySelectorAll('.nav-link').forEach(nav => {
+                nav.addEventListener("click", function () {
+                    window.location.hash = this.getAttribute("href");
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
