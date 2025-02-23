@@ -74,7 +74,6 @@
             {% endif %}
             <a class="nav-link" href="#suporte" data-bs-toggle="tab">Suporte</a>
             <a class="nav-link" href="#perfil" data-bs-toggle="tab">Perfil</a>
-            <a href="{{ url_for('suporte') }}" class="nav-link">Precisa de Suporte?</a>
             <form action="/logout" method="POST" style="margin: 0;">
                 <button type="submit" class="nav-link btn btn-link text-start" style="color: red; text-decoration: none; padding: 15px;">Sair</button>
             </form>
@@ -112,7 +111,7 @@
             <p>Configurações da conta.</p>
         </div>
     </div>
-
+    {% include "footer.html" %}
 
     <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
     <script>
