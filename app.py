@@ -681,6 +681,7 @@ def cancelar_inscricao(inscricao_id):
     #return render_template('portal_estudante.html', aluno=current_user)
 
 # Rota do Painel Admin
+# Rota do Painel Admin
 @app.route('/painel_admin', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -713,6 +714,10 @@ def painel_admin():
         status='concluido').all()
     agora = datetime.now()
 
+    # Mensagens no painel administrativo
+    mensagens_nao_lidas = Mensagem.query.filter_by(lida=False).all()
+    mensagens_lidas = Mensagem.query.filter_by(lida=True).all()
+
     return render_template('painel_admin.html',
                            agora=agora,
                            admin=current_user,
@@ -724,10 +729,47 @@ def painel_admin():
                            por_concluir=por_concluir,
                            nao_concluir=nao_concluir,
                            total_instituicoes=total_instituicoes,
-                           instituicoes=instituicoes
+                           instituicoes=instituicoes,
+                           mensagens_nao_lidas=mensagens_nao_lidas,
+                           mensagens_lidas=mensagens_lidas
                            )
 
 
+# Marcar mensagem como lida/não lida
+@app.route('/marcar_mensagem/<int:mensagem_id>', methods=['POST'])
+@login_required
+@admin_required
+def marcar_mensagem(mensagem_id):
+    mensagem = Mensagem.query.get(mensagem_id)
+
+    if not mensagem:
+        flash({'titulo': 'Erro', 'corpo': 'Mensagem não encontrada.'}, 'danger')
+        return redirect(url_for('painel_admin') + '#mensagens')
+
+    # Alterna entre lida e não lida
+    mensagem.lida = not mensagem.lida
+    db.session.commit()
+
+    flash({'titulo': 'Sucesso', 'corpo': 'Status da mensagem atualizado.'})
+    return redirect(url_for('painel_admin') + '#mensagens')
+
+
+# Deletar mensagem
+@app.route('/deletar_mensagem/<int:mensagem_id>', methods=['POST'])
+@login_required
+@admin_required
+def deletar_mensagem(mensagem_id):
+    mensagem = Mensagem.query.get(mensagem_id)
+
+    if not mensagem:
+        flash({'titulo': 'Erro', 'corpo': 'Mensagem não encontrada.'}, 'danger')
+        return redirect(url_for('painel_admin') + '#mensagens')
+
+    db.session.delete(mensagem)
+    db.session.commit()
+
+    flash({'titulo': 'Sucesso', 'corpo': 'Mensagem excluída com sucesso.'})
+    return redirect(url_for('painel_admin') + '#mensagens')
 
 
 @app.route('/buscar_alunos', methods=['GET'])
@@ -736,119 +778,77 @@ def painel_admin():
 def buscar_alunos():
     search = request.args.get('search', '')
 
-    if search:
-        alunos = Aluno.query.filter(
-            (Aluno.id.like(f"%{search}%")) |
-            (Aluno.nome_completo.like(f"%{search}%")) |
-            (Aluno.numero_bilhete.like(f"%{search}%"))
-        ).all()
-    else:
-        alunos = Aluno.query.all()
+    alunos = Aluno.query.filter(
+        (Aluno.id.like(f"%{search}%")) |
+        (Aluno.nome_completo.like(f"%{search}%")) |
+        (Aluno.numero_bilhete.like(f"%{search}%"))
+    ).all() if search else Aluno.query.all()
 
-    # Salva os dados na sessão
+    # Salvar na sessão sem remover após o primeiro uso
     session['alunos'] = [aluno.id for aluno in alunos]
     session['search'] = search
 
-    # Redireciona para a âncora #alunos
     return redirect(url_for('painel_admin') + '#alunos')
 
 
-
-
-@app.route('/atualizar_aluno/<int:aluno_id>', methods=['GET', 'POST'])
+@app.route('/atualizar_aluno/<int:aluno_id>', methods=['POST'])
 @login_required
 @admin_required
 def atualizar_aluno(aluno_id):
-    aluno = Aluno.query.get(aluno_id)
+    aluno = Aluno.query.filter_by(id=aluno_id).first_or_404()
 
-    if not aluno:
-        flash('Aluno não encontrado', 'danger')
-        redirect(url_for('painel_admin'))
+    try:
+        aluno.nome_completo = request.form['nome_completo']
+        aluno.numero_bilhete = request.form['numero_bilhete'].capitalize()
+        aluno.genero = request.form['genero']
+        aluno.email = request.form['email']
+        aluno.instituicao_9_classe = request.form['instituicao_9_classe']
+        aluno.ano_conclusao = request.form['ano_conclusao']
+        aluno.media_final = request.form['media_final']
+        aluno.turno_preferido = request.form['turno_preferido']
+        aluno.telefone = request.form['telefone']
+        aluno.municipio = request.form['municipio']
+        aluno.bairro = request.form['bairro']
+        aluno.provincia = request.form['provincia']
 
-    if request.method == 'POST':
-        # Obtendo os dados do formulário
-        nome_completo = request.form['nome_completo']
-        # Validação para data de nascimento
+        # Atualizar data de nascimento
         try:
-            data_nascimento = datetime.strptime(
+            aluno.data_nascimento = datetime.strptime(
                 request.form['data_nascimento'], '%Y-%m-%d').date()
         except ValueError:
-            flash({
-                'titulo': 'Erro',
-                'corpo': 'Data de nascimento inválida! Por favor, insira no formato correto (AAAA-MM-DD).'})
-            return redirect(url_for('painel_admin'))
+            flash('Erro: Data de nascimento inválida. Use o formato AAAA-MM-DD.', 'danger')
+            return redirect(url_for('painel_admin') + '#alunos')
 
-        numero_bilhete = request.form['numero_bilhete'].capitalize()
-        genero = request.form['genero']
-        email = request.form['email']
-        senha = request.form['senha']  # Se for uma senha vazia, não atualiza
-        instituicao_9_classe = request.form['instituicao_9_classe']
-        ano_conclusao = request.form['ano_conclusao']
-        media_final = request.form['media_final']
-        turno_preferido = request.form['turno_preferido']
-        telefone = request.form['telefone']
-        municipio = request.form['municipio']
-        bairro = request.form['bairro']
-        provincia = request.form['provincia']
-
-        # Atualizando os dados
-        aluno.nome_completo = nome_completo
-        aluno.data_nascimento = data_nascimento
-        aluno.numero_bilhete = numero_bilhete
-        aluno.genero = genero
-        aluno.email = email
-        aluno.instituicao_9_classe = instituicao_9_classe
-        aluno.ano_conclusao = ano_conclusao
-        aluno.media_final = media_final
-        aluno.turno_preferido = turno_preferido
-        aluno.telefone = telefone
-        aluno.municipio = municipio
-        aluno.bairro = bairro
-        aluno.provincia = provincia
-
-        # Verificando se foi inserida uma nova senha
+        # Atualizar senha se fornecida
+        senha = request.form.get('senha')
         if senha:
             aluno.senha = generate_password_hash(senha)
 
         db.session.commit()
-        flash({
-            'titulo': 'Sucesso',
-            'corpo': 'Dados atualizados com sucesso'
-        })
-
-        return redirect(url_for('painel_admin') + '#alunos')
-
-
-@app.route('/deletar_aluno/<int:aluno_id>', methods=['GET'])
-def deletar_aluno(aluno_id):
-    aluno = Aluno.query.get(aluno_id)
-
-    if not aluno:
-        flash({
-            'titulo': 'Sucesso',
-            'corpo': 'Aluno não encontrado'
-        })
-
-        return redirect(url_for('painel_admin') + '#alunos')
-
-    try:
-        db.session.delete(aluno)  # Deletando o aluno
-        db.session.commit()  # Confirmando a exclusão no banco de dados
-
-        flash({
-            'titulo': 'Sucesso',
-            'corpo': 'Aluno excluído com sucesso'
-        })
+        flash('Dados do aluno atualizados com sucesso!', 'success')
 
     except Exception as e:
-        db.session.rollback()  # Se ocorrer um erro, faz o rollback
+        db.session.rollback()
+        flash(f'Erro ao atualizar o aluno: {str(e)}', 'danger')
 
-        flash({
-            'titulo': 'Erro',
-            'corpo': f'Ocorreu um erro ao excluir o aluno: {str(e)}'
-        })
+    return redirect(url_for('painel_admin') + '#alunos')
 
-    # Depois de deletar,  chamar a função de renderização para painel_admin
+
+@app.route('/deletar_aluno/<int:aluno_id>', methods=['POST'])
+@login_required
+@admin_required
+def deletar_aluno(aluno_id):
+    aluno = Aluno.query.filter_by(id=aluno_id).first_or_404()
+
+    try:
+        db.session.delete(aluno)
+        db.session.commit()
+        flash('Aluno excluído com sucesso!', 'success')
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Erro ao excluir aluno: {str(e)}', 'danger')
+
     return redirect(url_for('painel_admin') + '#alunos')
 
 
