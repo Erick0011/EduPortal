@@ -211,8 +211,8 @@ class Mensagem(db.Model):
     mensagem = db.Column(db.Text, nullable=False)
     tipo = db.Column(db.String(20), nullable=False)  # 'suporte' ou 'contato'
 
-    usuario_id = db.Column(db.Integer, nullable=True)  # ID do aluno ou funcionário
-    tipo_usuario = db.Column(db.String(20), nullable=True)  # 'aluno' ou 'funcionario'
+    usuario_id = db.Column(db.Integer, nullable=False)  # ID do aluno ou funcionário
+    tipo_usuario = db.Column(db.String(20), nullable=False)  # 'aluno' ou 'funcionario'
 
     lida = db.Column(db.Boolean, default=False)  # Estado da mensagem
 
@@ -281,6 +281,10 @@ def aluno_required(f):
 def index():
     return render_template("index.html")
 
+@app.route("/suporte")
+def suporte():
+    return render_template("suporte.html")
+
 
 @app.route('/enviar_mensagem', methods=['POST'])
 def enviar_mensagem():
@@ -296,7 +300,7 @@ def enviar_mensagem():
         nome = request.form.get("nome")
         email = request.form.get("email")
         tipo_usuario = "visitante"  # Para usuários não autenticados
-        usuario_id = None
+        usuario_id = 0
 
     mensagem_texto = request.form.get("mensagem")
 
