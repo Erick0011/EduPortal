@@ -296,7 +296,7 @@ def enviar_mensagem():
         nome = request.form.get("nome")
         email = request.form.get("email")
         tipo_usuario = "visitante"  # Para usuários não autenticados
-        usuario_id = None
+        usuario_id = 0
 
     mensagem_texto = request.form.get("mensagem")
 
@@ -318,17 +318,7 @@ def enviar_mensagem():
     db.session.commit()
 
     flash("Mensagem enviada com sucesso!", "success")
-
-    # Redirecionamento após o envio
-    if tipo == "suporte":
-        if current_user.is_authenticated:
-            if current_user.tipo == "aluno":
-                return redirect(url_for("portal_instituicao"))
-            elif current_user.tipo == "funcionario":
-                return redirect(url_for("portal_estudante"))
-        return redirect(url_for("index"))  # Caso algo dê errado
-
-    return redirect(url_for("index"))  # Para mensagens de contato, volta ao início
+    return redirect(request.referrer or url_for('index'))
 
 
 @app.route('/cadastro', methods=['GET', 'POST'])
