@@ -69,6 +69,10 @@
                             <a class="nav-link" id="escolas-tab" data-bs-toggle="tab" href="#escolas"
                                 role="tab">Escolas</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="suporte-tab" data-bs-toggle="tab" href="#suporte"
+                                role="tab">Suporte</a>
+                        </li>
                         <!-- Botão de Logout -->
                         <li class="nav-item ms-3">
                             <form action="/logout" method="POST">
@@ -82,6 +86,15 @@
 
         <!-- Conteúdo das Tabs -->
         <div class="container mt-4">
+            {% if not aluno.frente_bilhete_path or not aluno.verso_bilhete_path or not aluno.certificado_path %}
+                <div id="documentoAlerta" class="alert alert-warning alert-dismissible fade show text-center" role="alert">
+                    <strong>Complete sua inscrição!</strong>
+                     <p>Para desbloquear os próximos passos da sua inscrição, é necessário fazer o upload dos seus documentos obrigatórios. Após o envio, você poderá continuar com o restante do processo.</p>
+                    <p>Você pode fazer o upload agora ou ir até a seção "Meu Perfil" para enviar os documentos.</p>
+                    <a href="{{ url_for('upload', user_id=aluno.id) }}" class="btn btn-sm btn-primary ms-2">Enviar Documentos</a>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
             <div class="tab-content">
                 <!-- Painel Inicial -->
                 <div class="tab-pane fade show active" id="inicio" role="tabpanel">
@@ -97,32 +110,10 @@
 
                     <p>Explore as funcionalidades disponíveis para gerenciar suas inscrições e conhecer mais sobre as
                         escolas.</p>
-                    
 
-                        {% if not aluno.frente_bilhete_path or not aluno.verso_bilhete_path or not aluno.certificado_path %}
-                        <script>
-                            document.addEventListener("DOMContentLoaded", function () {
-                                var myModal = new bootstrap.Modal(document.getElementById('documentoModal'));
-                                myModal.show();
-                            });
-                        </script>
-                        {% endif %}
-                        <!-- Modal de Bootstrap -->
-                        <div class="modal fade" id="documentoModal" tabindex="-1" aria-labelledby="documentoModalLabel" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="documentoModalLabel">Complete Sua Inscrição</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <p>Para desbloquear os próximos passos da sua inscrição, é necessário fazer o upload dos seus documentos obrigatórios. Após o envio, você poderá continuar com o restante do processo.</p>
-                                        <p>Você pode fazer o upload agora ou ir até a seção "Meu Perfil" para enviar os documentos.</p>
-                                        <a href="{{ url_for('upload', user_id=aluno.id) }}" class="btn btn-primary">Enviar Documentos</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+
+
+
 
                     <!-- Quadro com Frase Motivacional -->
                     <div class="mt-5 p-3 border rounded bg-light">
@@ -302,9 +293,14 @@
                         </div>
                     </div>-->
                 </div>
+                <!-- Perfil das Escolas -->
+                <div class="tab-pane fade" id="suporte" role="tabpanel">
+                    <h3 class="mb-3">Suporte</h3>
+
+                </div>
             </div>
         </div>
-        {% include "footer.html" %}
+
         <script>
             document.addEventListener("DOMContentLoaded", function () {
                 // Recupera a última aba acessada do localStorage
