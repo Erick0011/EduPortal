@@ -277,8 +277,8 @@
                                 <a href="{{ escola.link }}" target="_blank">
                                     <h5 class="card-title">{{ escola.nome_instituicao }}</h5>
                                 </a>
-                                <p class="card-text">Localização: {{ escola.localizacao }}, {{ escola.cidade }}</p>
-                                <p class="card-text">Cursos Disponíveis: {{ escola.cursos }}</p>
+                                <p class="card-text">Localização: {{ escola.endereco }}, {{ escola.cidade }}</p>
+                                <p class="card-text">Cursos Disponíveis: {{ escola.cursos.split(',') | join(', ') }}</p>
                                 <button class="btn btn-primary btn-sm">Inscrever-se</button>
                             </div>
                         </div>
