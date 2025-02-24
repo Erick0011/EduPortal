@@ -859,8 +859,70 @@ def deletar_aluno(aluno_id):
 @login_required
 @funcionario_required
 def portal_instituicao():
+    """Portal da Instituição: mostra detalhes"""
     instituicao = Instituicao.query.filter_by(id=current_user.instituicao_id).first()
-    return render_template('portal_instituicao.html', user=current_user, instituicao=instituicao)
+    funcionarios = Funcionario.query.filter_by(instituicao_id=current_user.instituicao_id).all()
+
+    return render_template('portal_instituicao.html', user=current_user, instituicao=instituicao, funcionarios=funcionarios)
+
+@app.route('/criar_funcionario', methods=['POST'])
+@login_required
+@funcionario_required
+def criar_funcionario():
+    """Permite que um funcionário Master crie novos funcionários para sua instituição."""
+    if current_user.permissao != 'master':
+        flash("Apenas funcionários Master podem criar novos funcionários!", "danger")
+        return redirect(url_for('portal_instituicao'))
+
+    nome_completo = request.form['nome_completo']
+    email = request.form['email']
+    senha = request.form['senha']
+    telefone = request.form.get('telefone', '')
+    permissao = request.form['permissao']
+
+    # Verifica se o email já existe
+    if Funcionario.query.filter_by(email=email).first():
+        flash("Já existe um funcionário com este email!", "danger")
+        return redirect(url_for('portal_instituicao'))
+
+    senha_hash = generate_password_hash(senha)
+
+    novo_funcionario = Funcionario(
+        nome_completo=nome_completo,
+        email=email,
+        senha=senha_hash,
+        telefone=telefone,
+        permissao=permissao,
+        instituicao_id=current_user.instituicao_id  # Define a instituição do Master
+    )
+
+    db.session.add(novo_funcionario)
+    db.session.commit()
+
+    flash("Funcionário criado com sucesso!", "success")
+    return redirect(url_for('portal_instituicao'))
+
+
+@app.route('/remover_funcionario/<int:funcionario_id>', methods=['POST'])
+@login_required
+@funcionario_required
+def remover_funcionario(funcionario_id):
+    """Permite que um funcionário Master remova funcionários da sua instituição."""
+    if current_user.permissao != 'master':
+        flash("Apenas funcionários Master podem remover funcionários!", "danger")
+        return redirect(url_for('portal_instituicao'))
+
+    funcionario = Funcionario.query.get(funcionario_id)
+
+    if not funcionario or funcionario.instituicao_id != current_user.instituicao_id:
+        flash("Funcionário não encontrado ou não pertence à sua instituição!", "danger")
+        return redirect(url_for('portal_instituicao'))
+
+    db.session.delete(funcionario)
+    db.session.commit()
+
+    flash("Funcionário removido com sucesso!", "success")
+    return redirect(url_for('portal_instituicao'))
 
 @app.route('/editar_instituicao/<int:instituicao_id>', methods=['POST'])
 @login_required

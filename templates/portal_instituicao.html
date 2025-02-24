@@ -205,8 +205,94 @@
         </div>
         {% if user.permissao == 'master' %}
         <div class="tab-pane fade" id="funcionarios">
-            <h1>Gerir Funcionários</h1>
-            <p>Gestão de funcionários da instituição.</p>
+            <div class="container mt-4">
+                <h2 class="text-center mb-4">Portal da Instituição: {{ instituicao.nome_instituicao }}</h2>
+
+                <!-- Apenas o Master pode criar funcionários -->
+                {% if user.permissao == 'master' %}
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Adicionar Novo Funcionário</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('criar_funcionario') }}">
+                            <div class="mb-3">
+                                <label class="form-label">Nome Completo:</label>
+                                <input type="text" class="form-control" name="nome_completo" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Email:</label>
+                                <input type="email" class="form-control" name="email" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Senha:</label>
+                                <input type="password" class="form-control" name="senha" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Telefone:</label>
+                                <input type="text" class="form-control" name="telefone">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Permissão:</label>
+                                <select class="form-select" name="permissao" required>
+                                    <option value="padrao">Padrão</option>
+                                    <option value="master">Master</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-success">Criar Funcionário</button>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Lista de funcionários -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">Funcionários da Instituição</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Email</th>
+                                    <th>Telefone</th>
+                                    <th>Permissão</th>
+                                    {% if user.permissao == 'master' %}
+                                    <th>Ações</th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for funcionario in funcionarios %}
+                                <tr>
+                                    <td>{{ funcionario.nome_completo }}</td>
+                                    <td>{{ funcionario.email }}</td>
+                                    <td>{{ funcionario.telefone }}</td>
+                                    <td>{{ funcionario.permissao }}</td>
+                                    {% if user.permissao == 'master' %}
+                                    <td>
+                                        <form method="POST" action="{{ url_for('remover_funcionario', funcionario_id=funcionario.id) }}">
+                                            <button type="submit" class="btn btn-danger btn-sm"
+                                                onclick="return confirm('Tem certeza que deseja remover este funcionário?')">
+                                                Remover
+                                            </button>
+                                        </form>
+                                    </td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
         </div>
         {% endif %}
         <div class="tab-pane fade" id="suporte">
