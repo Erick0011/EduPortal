@@ -334,6 +334,43 @@
         <div class="tab-pane fade" id="perfil">
             <h1>Perfil</h1>
             <p>Configurações da conta.</p>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show mt-3" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Formulário de Edição de Perfil -->
+            <form method="POST" action="{{ url_for('funcionario_editar_perfil') }}">
+                <div class="mb-3">
+                    <label class="form-label">Email:</label>
+                    <input type="email" class="form-control" name="email" value="{{ user.email }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Telefone:</label>
+                    <input type="text" class="form-control" name="telefone" value="{{ user.telefone or '' }}">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Nova Senha:</label>
+                    <input type="password" class="form-control" name="nova_senha">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Confirmar Nova Senha:</label>
+                    <input type="password" class="form-control" name="confirmar_senha">
+                </div>
+
+                <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+            </form>
         </div>
 
     </div>

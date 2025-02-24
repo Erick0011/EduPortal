@@ -866,6 +866,42 @@ def portal_instituicao():
 
     return render_template('portal_instituicao.html', user=current_user, instituicao=instituicao, funcionarios=funcionarios, senha_padrao=senha_padrao)
 
+@app.route('/funcionario/editar_perfil', methods=['POST'])
+@login_required
+@funcionario_required
+def funcionario_editar_perfil():
+    email = request.form.get('email')
+    telefone = request.form.get('telefone')
+    nova_senha = request.form.get('nova_senha')
+    confirmar_senha = request.form.get('confirmar_senha')
+
+    # Verifica se o email já pertence a outro usuário
+    if Funcionario.query.filter(Funcionario.email == email, Funcionario.id != current_user.id).first():
+        flash("Este email já está em uso.", "danger")
+        return redirect(url_for('portal_instituicao'))
+
+    # Atualiza email e telefone
+    current_user.email = email
+    current_user.telefone = telefone
+
+    # Se a senha foi fornecida, verifica e altera
+    if nova_senha:
+        if nova_senha != confirmar_senha:
+            flash("As senhas não coincidem.", "danger")
+            return redirect(url_for('portal_instituicao'))
+
+        if check_password_hash(current_user.senha, nova_senha):
+            flash("Escolha uma senha diferente da atual.", "warning")
+            return redirect(url_for('portal_instituicao'))
+
+        current_user.senha = generate_password_hash(nova_senha)
+
+    # Salvar mudanças no banco de dados
+    db.session.commit()
+
+    flash("Perfil atualizado com sucesso!", "success")
+    return redirect(url_for('portal_instituicao'))
+
 @app.route('/criar_funcionario', methods=['POST'])
 @login_required
 @funcionario_required
