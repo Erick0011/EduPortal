@@ -862,8 +862,9 @@ def portal_instituicao():
     """Portal da Instituição: mostra detalhes"""
     instituicao = Instituicao.query.filter_by(id=current_user.instituicao_id).first()
     funcionarios = Funcionario.query.filter_by(instituicao_id=current_user.instituicao_id).all()
+    senha_padrao = check_password_hash(current_user.senha, "12345")
 
-    return render_template('portal_instituicao.html', user=current_user, instituicao=instituicao, funcionarios=funcionarios)
+    return render_template('portal_instituicao.html', user=current_user, instituicao=instituicao, funcionarios=funcionarios, senha_padrao=senha_padrao)
 
 @app.route('/criar_funcionario', methods=['POST'])
 @login_required
@@ -876,7 +877,8 @@ def criar_funcionario():
 
     nome_completo = request.form['nome_completo']
     email = request.form['email']
-    senha = request.form['senha']
+    senha_padrao = "12345"
+    senha_hash = generate_password_hash(senha_padrao)
     telefone = request.form.get('telefone', '')
     permissao = request.form['permissao']
 
@@ -885,7 +887,7 @@ def criar_funcionario():
         flash("Já existe um funcionário com este email!", "danger")
         return redirect(url_for('portal_instituicao'))
 
-    senha_hash = generate_password_hash(senha)
+
 
     novo_funcionario = Funcionario(
         nome_completo=nome_completo,

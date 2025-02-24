@@ -82,6 +82,12 @@
 
     <!-- Conteúdo com abas -->
     <div class="content tab-content">
+        {% if senha_padrao %}
+        <div class="alert alert-warning text-center">
+            ⚠️ Sua senha ainda é a padrão (12345). Por segurança, vá até seu perfil e altere para uma senha mais segura!
+        </div>
+        {% endif %}
+
         <div class="tab-pane fade" id="dashboard">
             <h1>Dashboard</h1>
             <p>Visão geral da instituição.</p>
@@ -227,8 +233,9 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Senha:</label>
-                                <input type="password" class="form-control" name="senha" required>
+                                <label class="form-label">Senha inicial:</label>
+                                <input type="text" class="form-control" value="12345" disabled>
+                                <small class="form-text text-muted">A senha padrão será <strong>12345</strong>. O funcionário poderá alterá-la depois.</small>
                             </div>
 
                             <div class="mb-3">
