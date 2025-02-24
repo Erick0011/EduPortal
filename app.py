@@ -192,6 +192,7 @@ class Inscricao(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     aluno_id = db.Column(db.Integer, db.ForeignKey('aluno.id'), nullable=False)
     instituicao_id = db.Column(db.Integer, db.ForeignKey('instituicao.id'), nullable=False)
+    curso = db.Column(db.String(255), nullable=False)
     status = db.Column(db.String(20), nullable=False, default='Pendente')
     data_inscricao = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -606,40 +607,41 @@ def editar_perfil():
 @aluno_required
 @login_required
 def criar_inscricao():
-    # Verifica se o usuário é um aluno
     aluno = Aluno.query.filter_by(id=current_user.id).first()
     if not aluno:
         flash('Apenas alunos podem fazer inscrições.', 'danger')
         return redirect(url_for('portal_estudante') + '#inscricoes')
 
-    # Verifica se o aluno tem todos os documentos
     if not verificar_documentos_completos(aluno):
         flash('Complete todos os documentos para fazer a inscrição.', 'danger')
         return redirect(url_for('portal_estudante') + '#inscricoes')
 
-    # Pega a escola selecionada no formulário
     escola_id = request.form.get('escola')
+    curso = request.form.get('curso')
 
-    # Verifica se a escola é válida
     escola = Instituicao.query.get(escola_id)
     if not escola:
         flash('Escola inválida.', 'danger')
         return redirect(url_for('portal_estudante') + '#inscricoes')
 
-    # Verifica se o aluno já tem inscrição na escola usando o relacionamento ajustado
+    if not curso or curso not in escola.cursos.split(','):
+        flash('Curso inválido.', 'danger')
+        return redirect(url_for('portal_estudante') + '#inscricoes')
+
     inscricao_existente = Inscricao.query.filter_by(
         aluno_id=aluno.id,
-        instituicao_id=escola_id
+        instituicao_id=escola_id,
+        curso=curso
     ).first()
 
     if inscricao_existente:
-        flash('Você já se inscreveu nesta escola.', 'warning')
+        flash('Você já se inscreveu neste curso nesta escola.', 'warning')
         return redirect(url_for('portal_estudante') + '#inscricoes')
 
-    # Cria a inscrição
     nova_inscricao = Inscricao(
         aluno_id=aluno.id,
         instituicao_id=escola_id,
+        curso=curso,
         status='Pendente'
     )
     db.session.add(nova_inscricao)
@@ -647,6 +649,7 @@ def criar_inscricao():
 
     flash('Inscrição realizada com sucesso!', 'success')
     return redirect(url_for('portal_estudante') + '#inscricoes')
+
 
 
 # Rota para cancelar uma inscrição

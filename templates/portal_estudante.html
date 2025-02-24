@@ -133,18 +133,26 @@
                         <select class="form-select" id="escola" name="escola" required>
                             <option value="">Escolha uma escola...</option>
                             {% for escola in escolas %}
-                            <option value="{{ escola.id }}">{{ escola.nome_instituicao }}</option>
+                            <option value="{{ escola.id }}" data-cursos="{{ escola.cursos }}">{{ escola.nome_instituicao }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-primary"
-                            {% if not documentos_completos %} disabled {% endif %}>
+
+                    <div class="mb-3">
+                        <label for="curso" class="form-label">Selecione o Curso:</label>
+                        <select class="form-select" id="curso" name="curso" required disabled>
+                            <option value="">Escolha um curso...</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" {% if not documentos_completos %} disabled {% endif %}>
                         Nova Inscrição
                     </button>
                     {% if not documentos_completos %}
                     <small class="text-danger">* Complete todos os documentos para se inscrever.</small>
                     {% endif %}
                 </form>
+
 
                 <hr>
 
@@ -286,6 +294,9 @@
                 </div>
                 <!-- Aba de Suporte -->
                 <div class="tab-pane fade" id="suporte" role="tabpanel">
+                    <br>
+                    <br>
+                    <br>
                     <div class="d-flex justify-content-center">
                         <div class="card p-4 shadow-lg border-0" style="width: 100%; max-width: 450px; border-radius: 12px;">
 
@@ -317,6 +328,35 @@
 
                 </div>
             </div>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                let escolaSelect = document.getElementById("escola");
+                let cursoSelect = document.getElementById("curso");
+
+                escolaSelect.addEventListener("change", function() {
+                    let selectedOption = escolaSelect.options[escolaSelect.selectedIndex];
+                    let cursos = selectedOption.getAttribute("data-cursos");
+
+                    // Limpa os cursos anteriores
+                    cursoSelect.innerHTML = '<option value="">Escolha um curso...</option>';
+
+                    if (cursos) {
+                        let cursosArray = cursos.split(",");
+                        cursosArray.forEach(function(curso) {
+                            let option = document.createElement("option");
+                            option.value = curso.trim();
+                            option.textContent = curso.trim();
+                            cursoSelect.appendChild(option);
+                        });
+
+                        cursoSelect.disabled = false; // Habilita o campo de seleção de curso
+                    } else {
+                        cursoSelect.disabled = true; // Desabilita se não houver cursos
+                    }
+                });
+            });
+        </script>
+
 
 
         <script>
