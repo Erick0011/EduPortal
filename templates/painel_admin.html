@@ -46,16 +46,54 @@
             text-align: center;
         }
         .mensagem {
-            border: 1px solid #ccc !important;
-            padding: 10px !important;
-            margin-bottom: 10px !important;
-            border-radius: 5px !important;
-            background-color: white !important;
+            border-left: 5px solid #007bff;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            background-color: #ffffff;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.05);
+            transition: 0.3s;
+        }
+
+        .mensagem:hover {
+            box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.15);
         }
 
         .mensagem.lida {
-            background-color: #f0f0f0 !important;
+            background-color: #f8f9fa;
+            border-left-color: #6c757d;
         }
+
+        .mensagem p {
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .mensagem .mensagem-resumida {
+            font-style: italic;
+            color: #666;
+        }
+
+        .mensagem .mensagem-completa {
+            display: none;
+            font-size: 14px;
+            color: #222;
+            margin-top: 10px;
+        }
+
+        .mensagem .acoes {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        button {
+            font-size: 14px;
+            padding: 6px 12px;
+        }
+
+
     </style>
 </head>
 
@@ -107,7 +145,7 @@
                     <div class="card text-white bg-success">
                         <div class="card-body">
                             <h5 class="card-title">Mensagens Não Lidas</h5>
-                            <p class="card-text" id="total-mensagens">0</p>
+                            <p class="card-text" id="total-mensagens">{{ total_mensagens_nao_lidas }}</p>
                         </div>
                     </div>
                 </div>
@@ -430,44 +468,59 @@
             </div>
         </div>
         <div class="tab-pane fade" id="mensagens">
-            <h3>Mensagens</h3>
-            <!-- Lista de mensagens não lidas -->
-            <h4>Não Lidas</h4>
-            {% for msg in mensagens_nao_lidas %}
-            <div class="mensagem">
-                <p><strong>De:</strong> {{ msg.nome }} ({{ msg.email }})</p>
-                <p><strong>Tipo:</strong> {{ msg.tipo }}</p>
-                <p class="mensagem-resumida">{{ msg.mensagem[:100] }}...</p>
-                <p class="mensagem-completa" style="display:none;">{{ msg.mensagem }}</p>
+                <h3>Mensagens</h3>
 
-                <button onclick="toggleMensagem(this)">Ver Mais</button>
-                <form method="POST" action="{{ url_for('marcar_mensagem', mensagem_id=msg.id) }}">
-                    <button type="submit">Marcar como Lida</button>
-                </form>
-                <form method="POST" action="{{ url_for('deletar_mensagem', mensagem_id=msg.id) }}">
-                    <button type="submit" onclick="return confirm('Tem certeza que deseja excluir esta mensagem?');">Excluir</button>
-                </form>
+                <!-- Lista de mensagens não lidas -->
+                <h4 class="text-primary">Não Lidas</h4>
+                {% for msg in mensagens_nao_lidas %}
+                <div class="mensagem card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <strong>De:</strong> {{ msg.nome }} ({{ msg.email }})
+                        </h5>
+                        <p class="card-text"><strong>Tipo:</strong> {{ msg.tipo }}</p>
+                        <p class="mensagem-resumida">{{ msg.mensagem[:100] }}...</p>
+                        <p class="mensagem-completa">{{ msg.mensagem }}</p>
+
+                        <div class="acoes">
+                            <button class="btn btn-success btn-sm" onclick="toggleMensagem(this)">Ver Mais</button>
+                            <form method="POST" action="{{ url_for('marcar_mensagem', mensagem_id=msg.id) }}">
+                                <button type="submit" class="btn btn-primary btn-sm">Marcar como Lida</button>
+                            </form>
+                            <form method="POST" action="{{ url_for('deletar_mensagem', mensagem_id=msg.id) }}">
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir esta mensagem?');">Excluir</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Lista de mensagens lidas -->
+                <h4 class="text-secondary">Lidas</h4>
+                {% for msg in mensagens_lidas %}
+                <div class="mensagem card shadow-sm lida">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <strong>De:</strong> {{ msg.nome }} ({{ msg.email }})
+                        </h5>
+                        <p class="card-text"><strong>Tipo:</strong> {{ msg.tipo }}</p>
+                        <p class="mensagem-resumida">{{ msg.mensagem[:100] }}...</p>
+                        <p class="mensagem-completa">{{ msg.mensagem }}</p>
+
+                        <div class="acoes">
+                            <button class="btn btn-success btn-sm" onclick="toggleMensagem(this)">Ver Mais</button>
+                            <form method="POST" action="{{ url_for('marcar_mensagem', mensagem_id=msg.id) }}">
+                                <button type="submit" class="btn btn-warning btn-sm">Marcar como Não Lida</button>
+                            </form>
+                            <form method="POST" action="{{ url_for('deletar_mensagem', mensagem_id=msg.id) }}">
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir esta mensagem?');">Excluir</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
 
-            <!-- Lista de mensagens lidas -->
-            <h4>Lidas</h4>
-            {% for msg in mensagens_lidas %}
-            <div class="mensagem lida">
-                <p><strong>De:</strong> {{ msg.nome }} ({{ msg.email }})</p>
-                <p><strong>Tipo:</strong> {{ msg.tipo }}</p>
-                <p class="mensagem-resumida">{{ msg.mensagem[:100] }}...</p>
-                <p class="mensagem-completa" style="display:none;">{{ msg.mensagem }}</p>
-
-                <button onclick="toggleMensagem(this)">Ver Mais</button>
-                <form method="POST" action="{{ url_for('marcar_mensagem', mensagem_id=msg.id) }}">
-                    <button type="submit">Marcar como Não Lida</button>
-                </form>
-                <form method="POST" action="{{ url_for('deletar_mensagem', mensagem_id=msg.id) }}">
-                    <button type="submit" onclick="return confirm('Tem certeza que deseja excluir esta mensagem?');">Excluir</button>
-                </form>
-            </div>
-            {% endfor %}
 
             <script>
                 function toggleMensagem(button) {
@@ -487,7 +540,7 @@
                 }
             </script>
         </div>
-    </div>
+
 
     <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
     <script>

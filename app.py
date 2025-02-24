@@ -704,6 +704,7 @@ def painel_admin():
     logs_sistema = Log.query.order_by(Log.data_hora.desc()).limit(30).all()
     total_alunos = Aluno.query.count()
     total_instituicoes = Instituicao.query.count()
+
     alunos_recentes = Aluno.query.order_by(
         Aluno.created_at.desc()).limit(5).all()
     instituicoes = Instituicao.query.all()
@@ -716,6 +717,7 @@ def painel_admin():
 
     # Mensagens no painel administrativo
     mensagens_nao_lidas = Mensagem.query.filter_by(lida=False).all()
+    total_mensagens_nao_lidas = Mensagem.query.filter_by(lida=False).count()
     mensagens_lidas = Mensagem.query.filter_by(lida=True).all()
 
     return render_template('painel_admin.html',
@@ -731,7 +733,8 @@ def painel_admin():
                            total_instituicoes=total_instituicoes,
                            instituicoes=instituicoes,
                            mensagens_nao_lidas=mensagens_nao_lidas,
-                           mensagens_lidas=mensagens_lidas
+                           mensagens_lidas=mensagens_lidas,
+                           total_mensagens_nao_lidas=total_mensagens_nao_lidas
                            )
 
 
