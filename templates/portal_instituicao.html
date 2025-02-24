@@ -88,8 +88,115 @@
         </div>
         {% if user.permissao == 'master' %}
         <div class="tab-pane fade" id="instituicao">
-            <h1>Informações da Instituição</h1>
-            <p>Detalhes sobre a instituição.</p>
+            <div class="container mt-4">
+                <h2>Painel da Instituição</h2>
+
+                {% if user.permissao == 'master' %}
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Editar Informações da Instituição</h4>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('editar_instituicao', instituicao_id=user.instituicao_id) }}">
+                            <div class="mb-3">
+                                <label class="form-label">Nome da Instituição</label>
+                                <input type="text" class="form-control" name="nome_instituicao" value="{{ instituicao.nome_instituicao }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" name="email" value="{{ instituicao.email }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Endereço</label>
+                                <input type="text" class="form-control" name="endereco" value="{{ instituicao.endereco }}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Cidade</label>
+                                <input type="text" class="form-control" name="cidade" value="{{ instituicao.cidade }}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Província</label>
+                                <input type="text" class="form-control" name="provincia" value="{{ instituicao.provincia }}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Telefone</label>
+                                <input type="text" class="form-control" name="telefone" value="{{ instituicao.telefone }}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Descrição</label>
+                                <textarea class="form-control" name="descricao" rows="3">{{ instituicao.descricao }}</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Número de Vagas</label>
+                                <input type="number" class="form-control" name="numero_vagas" value="{{ instituicao.numero_vagas }}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Status</label>
+                                <select class="form-control" name="status">
+                                    <option value="ativo" {% if instituicao.status == 'ativo' %} selected {% endif %}>Ativo</option>
+                                    <option value="desativado" {% if instituicao.status == 'desativado' %} selected {% endif %}>Desativado</option>
+                                </select>
+                            </div>
+
+                            <!-- Área para adicionar cursos -->
+                            <h5 class="mt-4">Cursos Disponíveis</h5>
+                            <ul id="lista-cursos" class="list-group mb-3">
+                                {% for curso in instituicao.cursos.split(',') if curso %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    {{ curso }}
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="removerCurso(this)">Remover</button>
+                                </li>
+                                {% endfor %}
+                            </ul>
+
+                            <div class="input-group mb-3">
+                                <input type="text" id="novo-curso" class="form-control" placeholder="Adicionar novo curso">
+                                <button type="button" class="btn btn-success" onclick="adicionarCurso()">Adicionar Curso</button>
+                            </div>
+
+                            <!-- Campo oculto para armazenar os cursos como lista -->
+                            <input type="hidden" name="cursos" id="cursos-hidden" value="{{ instituicao.cursos }}">
+
+                            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                        </form>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-danger">Você não tem permissão para acessar esta página.</div>
+                {% endif %}
+            </div>
+
+            <script>
+                function adicionarCurso() {
+                    var cursoInput = document.getElementById("novo-curso");
+                    var cursoNome = cursoInput.value.trim();
+                    if (cursoNome === "") return;
+
+                    var listaCursos = document.getElementById("lista-cursos");
+                    var novoItem = document.createElement("li");
+                    novoItem.className = "list-group-item d-flex justify-content-between align-items-center";
+                    novoItem.innerHTML = `
+                        ${cursoNome}
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removerCurso(this)">Remover</button>
+                    `;
+
+                    listaCursos.appendChild(novoItem);
+                    atualizarCursos();
+                    cursoInput.value = "";
+                }
+
+                function removerCurso(botao) {
+                    botao.parentElement.remove();
+                    atualizarCursos();
+                }
+
+                function atualizarCursos() {
+                    var lista = document.querySelectorAll("#lista-cursos li");
+                    var cursos = [];
+                    lista.forEach(item => cursos.push(item.firstChild.textContent.trim()));
+                    document.getElementById("cursos-hidden").value = cursos.join(",");
+                }
+            </script>
         </div>
         {% endif %}
         <div class="tab-pane fade" id="inscricoes">

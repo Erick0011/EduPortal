@@ -88,8 +88,8 @@ class Instituicao(UserMixin, db.Model):
     data_atualizacao = db.Column(
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     inscricoes = db.relationship('Inscricao', backref='instituicao_rel', lazy=True)
+    cursos = db.Column(db.String(1000), nullable=True, default="")
 
-    cursos = db.Column(db.String(255), nullable=True)
 
     numero_vagas = db.Column(db.Integer, nullable=True)
 
@@ -859,7 +859,33 @@ def deletar_aluno(aluno_id):
 @login_required
 @funcionario_required
 def portal_instituicao():
-    return render_template('portal_instituicao.html', user=current_user)
+    instituicao = Instituicao.query.filter_by(id=current_user.instituicao_id).first()
+    return render_template('portal_instituicao.html', user=current_user, instituicao=instituicao)
+
+@app.route('/editar_instituicao/<int:instituicao_id>', methods=['POST'])
+@login_required
+@funcionario_required
+def editar_instituicao(instituicao_id):
+    if current_user.permissao != 'master':
+        flash("Você não tem permissão para editar esta instituição.", "danger")
+        return redirect(url_for('portal_instituicao'))
+
+    instituicao = Instituicao.query.get_or_404(instituicao_id)
+
+    instituicao.nome_instituicao = request.form.get('nome_instituicao')
+    instituicao.email = request.form.get('email')
+    instituicao.endereco = request.form.get('endereco')
+    instituicao.cidade = request.form.get('cidade')
+    instituicao.provincia = request.form.get('provincia')
+    instituicao.telefone = request.form.get('telefone')
+    instituicao.descricao = request.form.get('descricao')
+    instituicao.numero_vagas = request.form.get('numero_vagas')
+    instituicao.status = request.form.get('status')
+    instituicao.cursos = request.form.get('cursos')
+
+    db.session.commit()
+    flash("Informações da instituição atualizadas com sucesso!", "success")
+    return redirect(url_for('portal_instituicao'))
 
 
 @app.route('/instituicoes')
@@ -1056,12 +1082,51 @@ def criar_aluno_aleatorio():
     return  # Retorna o nome do aluno criado para exibir como feedback
 
 
+def criar_instituicao_aleatoria():
+    """Cria uma instituição fictícia e um funcionário Master associado"""
+    nome_instituicao = faker.company() + " Escola Secundaria"
+    email_instituicao = faker.unique.email()
+
+    nome_master = faker.name()
+    email_master = faker.unique.email()
+    senha_master = "12345"  # Pode ser gerada dinamicamente
+    senha_hash = generate_password_hash(senha_master)
+    telefone_master = f"9{faker.random_number(digits=8, fix_len=True)}"
+
+    # Verifica se já existe um funcionário com esse email
+    if Funcionario.query.filter_by(email=email_master).first():
+        flash("Erro ao gerar instituição: email do master já existe!", "danger")
+        return
+
+    # Criar a instituição
+    instituicao = Instituicao(
+        nome_instituicao=nome_instituicao,
+        email=email_instituicao
+    )
+    db.session.add(instituicao)
+    db.session.commit()  # Para obter o ID da instituição
+
+    # Criar o funcionário Master
+    master = Funcionario(
+        nome_completo=nome_master,
+        email=email_master,
+        senha=senha_hash,
+        telefone=telefone_master,
+        permissao="master",
+        instituicao_id=instituicao.id
+    )
+    db.session.add(master)
+    db.session.commit()
+
+    flash(f"Instituição '{nome_instituicao}' e Master '{nome_master}' criados!", "success")
+
+
 debug_buttons = [
     "Criar admin",
     "Criar 1 aluno",
     "Criar 10 aluno",
     "Criar 50 aluno",
-    "Por definir",
+    "Criar 1 instituição",
     "Por definir",
     "Por definir",
     "Por definir",
@@ -1088,7 +1153,7 @@ def debug_action(action_id):
             nome_completo="Administrador",
             email="admin@escola.com",
             senha=generate_password_hash(
-                "123456")  # Senha segura com hash
+                "12345")  # Senha segura com hash
         )
         db.session.add(novo_admin)
         db.session.commit()
@@ -1104,6 +1169,9 @@ def debug_action(action_id):
     elif action_id == 4:
         for _ in range(50):
             criar_aluno_aleatorio()
+        pass
+    elif action_id == 5:
+        criar_instituicao_aleatoria()
         pass
 
     # Redireciona de volta para o painel de debug
