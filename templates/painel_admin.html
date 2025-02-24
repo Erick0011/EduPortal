@@ -75,6 +75,7 @@
             color: #666;
         }
 
+
         .mensagem .mensagem-completa {
             display: none;
             font-size: 14px;
@@ -523,21 +524,8 @@
 
 
             <script>
-                function toggleMensagem(button) {
-                    var container = button.parentElement;
-                    var resumo = container.querySelector('.mensagem-resumida');
-                    var completa = container.querySelector('.mensagem-completa');
 
-                    if (completa.style.display === 'none') {
-                        completa.style.display = 'block';
-                        resumo.style.display = 'none';
-                        button.innerText = 'Ver Menos';
-                    } else {
-                        completa.style.display = 'none';
-                        resumo.style.display = 'block';
-                        button.innerText = 'Ver Mais';
-                    }
-                }
+
             </script>
         </div>
 
@@ -571,6 +559,21 @@
                 });
             });
         });
+        function toggleMensagem(button) {
+        var cardBody = button.closest('.card-body'); // Encontra o elemento pai correto
+        var resumo = cardBody.querySelector('.mensagem-resumida');
+        var completa = cardBody.querySelector('.mensagem-completa');
+
+        if (completa.style.display === 'none' || completa.style.display === '') {
+            completa.style.display = 'block';
+            resumo.style.display = 'none';
+            button.innerText = 'Ver Menos';
+        } else {
+            completa.style.display = 'none';
+            resumo.style.display = 'block';
+            button.innerText = 'Ver Mais';
+        }
+    }
     </script>
 </body>
 
