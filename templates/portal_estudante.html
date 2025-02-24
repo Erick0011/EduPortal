@@ -162,7 +162,10 @@
                     <thead class="table-primary">
                         <tr>
                             <th>Escola</th>
-                             <th>Status</th>
+                            <th>Curso</th>
+                            <th>Status</th>
+                            <th>Data de Inscrição</th>
+                            <th>Última Atualização</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
@@ -170,7 +173,10 @@
                         {% for inscricao in inscricoes %}
                         <tr>
                             <td>{{ inscricao.instituicao.nome_instituicao }}</td>
+                            <td>{{ inscricao.curso }}</td>
                             <td>{{ inscricao.status }}</td>
+                            <td>{{ inscricao.data_inscricao.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>{{ inscricao.data_atualizacao.strftime('%d/%m/%Y %H:%M') }}</td>
                             <td>
                                 {% if inscricao.status == 'Pendente' %}
                                 <form action="{{ url_for('cancelar_inscricao', inscricao_id=inscricao.id) }}" method="POST" style="display:inline;">
