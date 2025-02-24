@@ -1054,7 +1054,8 @@ def criar_instituicao():
         email_instituicao = request.form['email_instituicao']
         nome_master = request.form['nome_master']
         email_master = request.form['email_master']
-        senha_master = request.form['senha_master']
+        senha_padrao = "12345"
+        senha_hash = generate_password_hash(senha_padrao)
         telefone_master = request.form['telefone_master']
 
         # Verifica se o email do master já existe
@@ -1070,7 +1071,6 @@ def criar_instituicao():
         db.session.commit()  # Confirma para obter o ID da instituição
 
         # Cria o Funcionário Master
-        senha_hash = generate_password_hash(senha_master)
         master = Funcionario(
             nome_completo=nome_master,
             email=email_master,
