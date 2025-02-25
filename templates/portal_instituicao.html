@@ -91,6 +91,7 @@
         <div class="tab-pane fade" id="dashboard">
             <h1>Dashboard</h1>
             <p>Visão geral da instituição.</p>
+            <a href="{{ url_for('download_lista_pdf') }}" class="btn btn-primary">Baixar PDF</a>
         </div>
         {% if user.permissao == 'master' %}
         <div class="tab-pane fade" id="instituicao">
@@ -225,7 +226,7 @@
                         <select name="status" class="form-select">
                             <option value="Todos">Todos</option>
                             <option value="Pendente">Pendente</option>
-                            <option value="Aceito">Aceito</option>
+                            <option value="Aceite">Aceite</option>
                             <option value="Rejeitado">Rejeitado</option>
                         </select>
                     </div>
@@ -256,7 +257,7 @@
                             </td>
                             <td>{{ inscricao.curso }}</td>
                             <td>{{ inscricao.aluno.media_final }}</td>
-                            <td>{{ 2024 - inscricao.aluno.data_nascimento.year }} anos</td>
+                            <td>{{ ano_atual - inscricao.aluno.data_nascimento.year }} anos</td>
                             <td>
                                 <span class="badge {% if inscricao.status == 'Pendente' %}bg-warning{% elif inscricao.status == 'Aceito' %}bg-success{% else %}bg-danger{% endif %}">
                                     {{ inscricao.status }}

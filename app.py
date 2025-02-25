@@ -1,11 +1,13 @@
-from flask import Flask, session, render_template, redirect, request, url_for, flash, send_from_directory, abort
+from flask import Flask, session, render_template, redirect, request, url_for, flash, Response, send_from_directory, abort
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import BadRequest
+from sqlalchemy.sql.expression import extract
 from faker import Faker
+from fpdf import FPDF
 from datetime import datetime
 from functools import wraps
 import os
@@ -875,9 +877,13 @@ def portal_instituicao():
     # Aplicando filtros
     if media_min:
         inscricoes_query = inscricoes_query.join(Aluno).filter(Aluno.media_final >= media_min)
+
     if idade_min:
         ano_atual = datetime.now().year
-        inscricoes_query = inscricoes_query.join(Aluno).filter((ano_atual - Aluno.data_nascimento.year) >= idade_min)
+        inscricoes_query = inscricoes_query.join(Aluno).filter(
+            (ano_atual - extract('year', Aluno.data_nascimento)) >= idade_min
+        )
+
     if status_filtro and status_filtro != "Todos":
         inscricoes_query = inscricoes_query.filter_by(status=status_filtro)
 
@@ -889,7 +895,8 @@ def portal_instituicao():
         instituicao=instituicao,
         funcionarios=funcionarios,
         senha_padrao=senha_padrao,
-        inscricoes=inscricoes
+        inscricoes=inscricoes,
+        ano_atual=datetime.now().year  # Passando o ano atual para o template
     )
 
 @app.route('/atualizar_inscricao/<int:inscricao_id>', methods=['POST'])
@@ -907,7 +914,7 @@ def atualizar_inscricao(inscricao_id):
     mensagem = request.form.get('mensagem')  # Captura a mensagem do formulário
 
     if acao == "aceitar":
-        inscricao.status = "Aceito"
+        inscricao.status = "Aceite"
         flash("Inscrição aceita com sucesso!", "success")
     elif acao == "rejeitar":
         inscricao.status = "Rejeitado"
@@ -921,6 +928,56 @@ def atualizar_inscricao(inscricao_id):
     db.session.commit()
     return redirect(url_for('portal_instituicao'))
 
+@app.route('/download_lista_pdf')
+@login_required
+@funcionario_required
+def download_lista_pdf():
+    inscricoes = Inscricao.query.filter_by(status="Aceito", instituicao_id=current_user.instituicao_id).all()
+
+    # Nome da instituição e data do download
+    instituicao_nome = current_user.instituicao.nome_instituicao
+    data_download = datetime.now().strftime("%d/%m/%Y %H:%M")
+
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+
+    # Cabeçalho
+    pdf.set_font("Arial", "B", 16)
+    pdf.cell(200, 10, instituicao_nome, ln=True, align="C")  # Nome da instituição
+    pdf.set_font("Arial", "I", 12)
+    pdf.cell(200, 10, f"Data do Download: {data_download}", ln=True, align="C")  # Data do download
+    pdf.ln(10)
+
+    # **Título da lista**
+    pdf.set_font("Arial", "B", 14)
+    pdf.cell(200, 10, "Lista de Inscrições Aceitas", ln=True, align="C")
+    pdf.ln(10)
+
+    # Tabela
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(20, 10, "ID", 1)
+    pdf.cell(60, 10, "Nome", 1)
+    pdf.cell(50, 10, "Email", 1)
+    pdf.cell(30, 10, "Telefone", 1)
+    pdf.cell(30, 10, "BI", 1)
+    pdf.cell(40, 10, "Curso", 1)
+    pdf.ln()
+
+    pdf.set_font("Arial", "", 12)
+    for inscricao in inscricoes:
+        pdf.cell(20, 10, str(inscricao.id), 1)
+        pdf.cell(60, 10, inscricao.aluno.nome_completo, 1)
+        pdf.cell(50, 10, inscricao.aluno.email, 1)
+        pdf.cell(30, 10, inscricao.aluno.telefone, 1)
+        pdf.cell(30, 10, inscricao.aluno.numero_bi, 1)
+        pdf.cell(40, 10, inscricao.curso, 1)
+        pdf.ln()
+
+    response = Response(pdf.output(dest="S").encode("latin1"))
+    response.headers["Content-Type"] = "application/pdf"
+    response.headers["Content-Disposition"] = "attachment; filename=lista_aprovados.pdf"
+    return response
 
 @app.route('/funcionario/editar_perfil', methods=['POST'])
 @login_required
