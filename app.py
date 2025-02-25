@@ -628,7 +628,7 @@ def criar_inscricao():
     # Contar quantas inscrições esse aluno já tem na escola
     total_inscricoes = Inscricao.query.filter_by(aluno_id=aluno.id, instituicao_id=escola_id).count()
 
-    if total_inscricoes >= 3:  # Defina o limite (ex: 3 cursos por escola)
+    if total_inscricoes >= 2:
         flash('Você já atingiu o limite de inscrições para esta escola.', 'warning')
         return redirect(url_for('portal_estudante') + '#inscricoes')
 
