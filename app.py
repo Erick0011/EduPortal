@@ -859,12 +859,62 @@ def deletar_aluno(aluno_id):
 @login_required
 @funcionario_required
 def portal_instituicao():
-    """Portal da Instituição: mostra detalhes"""
+    """Portal da Instituição: mostra detalhes e inscrições de alunos"""
     instituicao = Instituicao.query.filter_by(id=current_user.instituicao_id).first()
     funcionarios = Funcionario.query.filter_by(instituicao_id=current_user.instituicao_id).all()
     senha_padrao = check_password_hash(current_user.senha, "12345")
 
-    return render_template('portal_instituicao.html', user=current_user, instituicao=instituicao, funcionarios=funcionarios, senha_padrao=senha_padrao)
+    # Obtendo filtros da URL
+    media_min = request.args.get('media_min', type=float)
+    idade_min = request.args.get('idade_min', type=int)
+    status_filtro = request.args.get('status')
+
+    # Buscar apenas alunos com inscrições nesta instituição
+    inscricoes_query = Inscricao.query.filter_by(instituicao_id=current_user.instituicao_id)
+
+    # Aplicando filtros
+    if media_min:
+        inscricoes_query = inscricoes_query.join(Aluno).filter(Aluno.media_final >= media_min)
+    if idade_min:
+        ano_atual = datetime.now().year
+        inscricoes_query = inscricoes_query.join(Aluno).filter((ano_atual - Aluno.data_nascimento.year) >= idade_min)
+    if status_filtro and status_filtro != "Todos":
+        inscricoes_query = inscricoes_query.filter_by(status=status_filtro)
+
+    inscricoes = inscricoes_query.all()
+
+    return render_template(
+        'portal_instituicao.html',
+        user=current_user,
+        instituicao=instituicao,
+        funcionarios=funcionarios,
+        senha_padrao=senha_padrao,
+        inscricoes=inscricoes
+    )
+
+@app.route('/atualizar_inscricao/<int:inscricao_id>', methods=['POST'])
+@login_required
+@funcionario_required
+def atualizar_inscricao(inscricao_id):
+    inscricao = Inscricao.query.get_or_404(inscricao_id)
+
+    # Verifica se a inscrição pertence à instituição do usuário logado
+    if inscricao.instituicao_id != current_user.instituicao_id:
+        flash("Você não tem permissão para modificar esta inscrição.", "danger")
+        return redirect(url_for('portal_instituicao'))
+
+    acao = request.form.get('acao')
+
+    if acao == "aceitar":
+        inscricao.status = "Aceito"
+        flash("Inscrição aceita com sucesso!", "success")
+    elif acao == "rejeitar":
+        inscricao.status = "Rejeitado"
+        flash("Inscrição rejeitada.", "warning")
+
+    db.session.commit()
+    return redirect(url_for('portal_instituicao'))
+
 
 @app.route('/funcionario/editar_perfil', methods=['POST'])
 @login_required

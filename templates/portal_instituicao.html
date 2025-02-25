@@ -207,7 +207,135 @@
         {% endif %}
         <div class="tab-pane fade" id="inscricoes">
             <h1>Gerir Inscrições</h1>
-            <p>Controle e acompanhamento de inscrições.</p>
+            <div class="container mt-4">
+                <h2 class="text-center">Portal da Instituição - {{ instituicao.nome_instituicao }}</h2>
+
+                <!-- Filtros -->
+                <form method="GET" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="media_min" class="form-label">Média Final Mínima:</label>
+                        <input type="number" name="media_min" step="0.1" min="0" max="20" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="idade_min" class="form-label">Idade Mínima:</label>
+                        <input type="number" name="idade_min" min="10" max="30" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="status" class="form-label">Status:</label>
+                        <select name="status" class="form-select">
+                            <option value="Todos">Todos</option>
+                            <option value="Pendente">Pendente</option>
+                            <option value="Aceito">Aceito</option>
+                            <option value="Rejeitado">Rejeitado</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 align-self-end">
+                        <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+                    </div>
+                </form>
+
+                <!-- Tabela de Inscrições -->
+                <table class="table table-hover mt-4">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Aluno</th>
+                            <th>Curso</th>
+                            <th>Média</th>
+                            <th>Idade</th>
+                            <th>Status</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inscricao in inscricoes %}
+                        <tr>
+                            <td>
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#modalAluno{{ inscricao.id }}">
+                                    {{ inscricao.aluno.nome_completo }}
+                                </a>
+                            </td>
+                            <td>{{ inscricao.curso }}</td>
+                            <td>{{ inscricao.aluno.media_final }}</td>
+                            <td>{{ 2024 - inscricao.aluno.data_nascimento.year }} anos</td>
+                            <td>
+                                <span class="badge {% if inscricao.status == 'Pendente' %}bg-warning{% elif inscricao.status == 'Aceito' %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ inscricao.status }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if inscricao.status == "Pendente" %}
+                                    <form method="POST" action="{{ url_for('atualizar_inscricao', inscricao_id=inscricao.id) }}" class="d-inline">
+                                        <input type="hidden" name="acao" value="aceitar">
+                                        <button type="submit" class="btn btn-success btn-sm">Aceitar</button>
+                                    </form>
+                                    <form method="POST" action="{{ url_for('atualizar_inscricao', inscricao_id=inscricao.id) }}" class="d-inline">
+                                        <input type="hidden" name="acao" value="rejeitar">
+                                        <button type="submit" class="btn btn-danger btn-sm">Rejeitar</button>
+                                    </form>
+                                {% else %}
+                                    <p>-</p>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        <!-- Modal com detalhes do aluno -->
+                        <div class="modal fade" id="modalAluno{{ inscricao.id }}" tabindex="-1" aria-labelledby="modalAlunoLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Detalhes de {{ inscricao.aluno.nome_completo }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p><strong>Curso:</strong> {{ inscricao.curso }}</p>
+                                        <p><strong>Média Final:</strong> {{ inscricao.aluno.media_final }}</p>
+                                        <p><strong>Idade:</strong> {{ 2024 - inscricao.aluno.data_nascimento.year }} anos</p>
+                                        <p><strong>Telefone:</strong> {{ inscricao.aluno.telefone }}</p>
+                                        <p><strong>Email:</strong> {{ inscricao.aluno.email }}</p>
+                                        <p><strong>Endereço:</strong> {{ inscricao.aluno.bairro }}, {{ inscricao.aluno.municipio }}, {{ inscricao.aluno.provincia }}</p>
+
+                                        <!-- Documentos -->
+                                        <h5>Documentos</h5>
+                                        <div class="d-flex flex-wrap">
+                                            {% if inscricao.aluno.frente_bilhete_path %}
+                                                <a href="{{ url_for('static', filename=inscricao.aluno.frente_bilhete_path) }}" target="_blank">
+                                                    <img src="{{ url_for('static', filename=inscricao.aluno.frente_bilhete_path) }}" class="img-thumbnail me-2" style="max-width: 150px;">
+                                                </a>
+                                            {% endif %}
+                                            {% if inscricao.aluno.verso_bilhete_path %}
+                                                <a href="{{ url_for('static', filename=inscricao.aluno.verso_bilhete_path) }}" target="_blank">
+                                                    <img src="{{ url_for('static', filename=inscricao.aluno.verso_bilhete_path) }}" class="img-thumbnail me-2" style="max-width: 150px;">
+                                                </a>
+                                            {% endif %}
+                                            {% if inscricao.aluno.certificado_notas_path %}
+                                                <a href="{{ url_for('static', filename=inscricao.aluno.certificado_notas_path) }}" target="_blank">
+                                                    <img src="{{ url_for('static', filename=inscricao.aluno.certificado_notas_path) }}" class="img-thumbnail me-2" style="max-width: 150px;">
+                                                </a>
+                                            {% endif %}
+                                        </div>
+
+                                        <!-- Botões para baixar os documentos -->
+                                        <div class="mt-3">
+                                            {% if inscricao.aluno.frente_bilhete_path %}
+                                                <a href="{{ url_for('static', filename=inscricao.aluno.frente_bilhete_path) }}" download class="btn btn-secondary btn-sm">Baixar Frente BI</a>
+                                            {% endif %}
+                                            {% if inscricao.aluno.verso_bilhete_path %}
+                                                <a href="{{ url_for('static', filename=inscricao.aluno.verso_bilhete_path) }}" download class="btn btn-secondary btn-sm">Baixar Verso BI</a>
+                                            {% endif %}
+                                            {% if inscricao.aluno.certificado_notas_path %}
+                                                <a href="{{ url_for('static', filename=inscricao.aluno.certificado_notas_path) }}" download class="btn btn-secondary btn-sm">Baixar Certificado</a>
+                                            {% endif %}
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
         {% if user.permissao == 'master' %}
         <div class="tab-pane fade" id="funcionarios">
