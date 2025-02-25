@@ -618,27 +618,21 @@ def criar_inscricao():
         return redirect(url_for('portal_estudante') + '#inscricoes')
 
     escola_id = request.form.get('escola')
-    curso = request.form.get('curso')
+    curso = request.form.get('curso')  # Pegar o curso selecionado no formulário
 
     escola = Instituicao.query.get(escola_id)
     if not escola:
         flash('Escola inválida.', 'danger')
         return redirect(url_for('portal_estudante') + '#inscricoes')
 
-    if not curso or curso not in escola.cursos.split(','):
-        flash('Curso inválido.', 'danger')
+    # Contar quantas inscrições esse aluno já tem na escola
+    total_inscricoes = Inscricao.query.filter_by(aluno_id=aluno.id, instituicao_id=escola_id).count()
+
+    if total_inscricoes >= 3:  # Defina o limite (ex: 3 cursos por escola)
+        flash('Você já atingiu o limite de inscrições para esta escola.', 'warning')
         return redirect(url_for('portal_estudante') + '#inscricoes')
 
-    inscricao_existente = Inscricao.query.filter_by(
-        aluno_id=aluno.id,
-        instituicao_id=escola_id,
-        curso=curso
-    ).first()
-
-    if inscricao_existente:
-        flash('Você já se inscreveu neste curso nesta escola.', 'warning')
-        return redirect(url_for('portal_estudante') + '#inscricoes')
-
+    # Criar a nova inscrição
     nova_inscricao = Inscricao(
         aluno_id=aluno.id,
         instituicao_id=escola_id,
@@ -650,6 +644,7 @@ def criar_inscricao():
 
     flash('Inscrição realizada com sucesso!', 'success')
     return redirect(url_for('portal_estudante') + '#inscricoes')
+
 
 
 
