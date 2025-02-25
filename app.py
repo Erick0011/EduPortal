@@ -196,6 +196,7 @@ class Inscricao(db.Model):
     status = db.Column(db.String(20), nullable=False, default='Pendente')
     data_inscricao = db.Column(db.DateTime, default=datetime.utcnow)
     data_atualizacao = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    mensagem_instituicao = db.Column(db.Text, nullable=True)
 
     # Relacionamentos
     aluno = db.relationship('Aluno', backref='inscricoes_rel', lazy=True)

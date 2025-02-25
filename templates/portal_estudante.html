@@ -167,6 +167,7 @@
                             <th>Data de Inscrição</th>
                             <th>Última Atualização</th>
                             <th>Ações</th>
+                            <th>Mensagem</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -174,7 +175,20 @@
                         <tr>
                             <td>{{ inscricao.instituicao.nome_instituicao }}</td>
                             <td>{{ inscricao.curso }}</td>
-                            <td>{{ inscricao.status }}</td>
+                            <td>
+                                {% if inscricao.status == 'Aceite' %}
+                                    <span class="text-success fw-bold">Aceite</span>
+                                {% elif inscricao.status == 'Rejeitado' %}
+                                    <span class="text-danger fw-bold">Rejeitado</span>
+                                {% elif inscricao.status == 'Pendente' %}
+                                    <span class="text-warning fw-bold">Pendente</span>
+                                {% elif inscricao.status == 'Sugestão de Curso' %}
+                                    <span class="text-info fw-bold">Sugestão de Curso</span>
+                                {% else %}
+                                    <span class="text-secondary fw-bold">{{ inscricao.status }}</span>
+                                {% endif %}
+                            </td>
+
                             <td>{{ inscricao.data_inscricao.strftime('%d/%m/%Y %H:%M') }}</td>
                             <td>{{ inscricao.data_atualizacao.strftime('%d/%m/%Y %H:%M') }}</td>
                             <td>
@@ -184,6 +198,34 @@
                                 </form>
                                 {% else %}
                                 <span class="text-muted">Ação indisponível</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if inscricao.mensagem_instituicao %}
+                                <!-- Botão para abrir o modal -->
+                                <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#mensagemModal{{ inscricao.id }}">
+                                    Ver Mensagem
+                                </button>
+
+                                <!-- Modal da mensagem -->
+                                <div class="modal fade" id="mensagemModal{{ inscricao.id }}" tabindex="-1" aria-labelledby="mensagemModalLabel{{ inscricao.id }}" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="mensagemModalLabel{{ inscricao.id }}">Mensagem da Instituição</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                {{ inscricao.mensagem_instituicao }}
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <span class="text-muted">Sem mensagem</span>
                                 {% endif %}
                             </td>
                         </tr>
