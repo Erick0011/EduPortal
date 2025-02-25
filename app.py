@@ -904,6 +904,7 @@ def atualizar_inscricao(inscricao_id):
         return redirect(url_for('portal_instituicao'))
 
     acao = request.form.get('acao')
+    mensagem = request.form.get('mensagem')  # Captura a mensagem do formulário
 
     if acao == "aceitar":
         inscricao.status = "Aceito"
@@ -911,6 +912,11 @@ def atualizar_inscricao(inscricao_id):
     elif acao == "rejeitar":
         inscricao.status = "Rejeitado"
         flash("Inscrição rejeitada.", "warning")
+
+    # Salva a mensagem se houver
+    if mensagem:
+        inscricao.mensagem_instituicao = mensagem
+        flash("Mensagem enviada com sucesso!", "info")
 
     db.session.commit()
     return redirect(url_for('portal_instituicao'))
