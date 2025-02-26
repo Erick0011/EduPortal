@@ -578,6 +578,60 @@ def portal_estudante():
         escolas=escolas,
         aluno=current_user
     )
+@app.route('/download_certificado/<int:inscricao_id>')
+@aluno_required
+@login_required
+def download_certificado(inscricao_id):
+    inscricao = Inscricao.query.get_or_404(inscricao_id)
+
+    # Verifica se a inscrição pertence ao aluno logado e se está "Aceite"
+    if inscricao.aluno_id != current_user.id or inscricao.status != "Aceite":
+        return "Você não tem permissão para baixar este certificado.", 403
+
+    return gerar_certificado_pdf(inscricao)
+
+def gerar_certificado_pdf(inscricao):
+    pdf = FPDF()
+    pdf.add_page()
+
+    # Cabeçalho
+    pdf.set_font("Arial", "B", 16)
+    pdf.cell(200, 10, inscricao.instituicao.nome_instituicao, ln=True, align="C")
+    pdf.ln(10)
+
+    # Título do certificado
+    pdf.set_font("Arial", "B", 14)
+    pdf.cell(200, 10, "CERTIFICADO DE ACEITAÇÃO", ln=True, align="C")
+    pdf.ln(10)
+
+    # Corpo do certificado
+    pdf.set_font("Arial", "", 12)
+    texto_certificado = f"""
+Certificamos que {inscricao.aluno.nome_completo}, portador do BI número {inscricao.aluno.numero_bilhete}, 
+foi oficialmente aceito no curso de {inscricao.curso} na instituição {inscricao.instituicao.nome_instituicao}. 
+
+A inscrição foi realizada e processada através da plataforma EduPortal, garantindo transparência e eficiência no processo seletivo.
+
+Este certificado pode ser utilizado como comprovativo da aceitação do aluno para fins acadêmicos e administrativos.
+    """
+    pdf.multi_cell(0, 10, texto_certificado)
+    pdf.ln(10)
+
+    # ID da Inscrição e Data
+    pdf.cell(200, 10, f"ID da Inscrição: {inscricao.id}", ln=True, align="L")
+    pdf.cell(200, 10, f"Data de Emissão: {datetime.now().strftime('%d/%m/%Y')}", ln=True, align="L")
+    pdf.ln(20)
+
+
+    # Marca EduPortal
+    pdf.set_font("Arial", "B", 10)
+    pdf.set_text_color(0, 102, 204)  # Azul
+    pdf.cell(200, 10, "EduPortal - Facilitando a sua educação", ln=True, align="C")
+
+    response = Response(pdf.output(dest="S").encode("latin1"))
+    response.headers["Content-Type"] = "application/pdf"
+    response.headers["Content-Disposition"] = "attachment; filename=certificado.pdf"
+    return response
 
 @app.route('/editar_perfil', methods=['GET', 'POST'])
 @aluno_required

@@ -196,6 +196,10 @@
                                 <form action="{{ url_for('cancelar_inscricao', inscricao_id=inscricao.id) }}" method="POST" style="display:inline;">
                                     <button class="btn btn-danger btn-sm">Cancelar</button>
                                 </form>
+                                {% elif inscricao.status == 'Aceite' %}
+                                <a href="{{ url_for('download_certificado', inscricao_id=inscricao.id) }}" class="btn btn-success btn-sm">
+                                    Baixar Certificado
+                                </a>
                                 {% else %}
                                 <span class="text-muted">Ação indisponível</span>
                                 {% endif %}
@@ -232,6 +236,7 @@
                         {% endfor %}
                     </tbody>
                 </table>
+
                 </div>
 
 
