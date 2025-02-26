@@ -644,6 +644,7 @@ def editar_perfil():
         email = request.form.get('email')
         telefone = request.form.get('telefone')
         senha = request.form.get('senha')
+        confirmar_senha = request.form.get('confirmar_senha')
 
         # Atualize apenas os campos que podem ser editados
         aluno.email = email
@@ -651,14 +652,22 @@ def editar_perfil():
 
         # Verifique se o campo de senha foi preenchido
         if senha:
-            aluno.senha = generate_password_hash(senha)
+            if senha != confirmar_senha:
+                flash("As senhas não coincidem.", "danger")
+                return redirect(url_for('portal_estudante') + '#perfil')
+
+            if check_password_hash(aluno.senha, senha):
+                flash("Escolha uma senha diferente da atual.", "warning")
+                return redirect(url_for('portal_estudante') + '#perfil')
+
+            current_user.senha = generate_password_hash(senha)
 
         # Salve as alterações no banco de dados
         db.session.commit()
         flash('Informações atualizadas com sucesso!', 'success')
-        return redirect(url_for('editar_perfil'))
+        return redirect(url_for('portal_estudante') + '#perfil')
 
-    return redirect(url_for('portal_estudante'))
+    return redirect(url_for('portal_estudante') + '#perfil')
 
 # Rota para criar uma inscrição
 @app.route('/criar_inscricao', methods=['POST'])
