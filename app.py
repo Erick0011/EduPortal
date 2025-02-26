@@ -928,11 +928,12 @@ def atualizar_inscricao(inscricao_id):
     db.session.commit()
     return redirect(url_for('portal_instituicao'))
 
+
 @app.route('/download_lista_pdf')
 @login_required
 @funcionario_required
 def download_lista_pdf():
-    inscricoes = Inscricao.query.filter_by(status="Aceito", instituicao_id=current_user.instituicao_id).all()
+    inscricoes = Inscricao.query.filter_by(status="Aceite", instituicao_id=current_user.instituicao_id).all()
 
     # Nome da instituição e data do download
     instituicao_nome = current_user.instituicao.nome_instituicao
@@ -942,37 +943,53 @@ def download_lista_pdf():
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
 
-    # Cabeçalho
+    # **Cabeçalho**
     pdf.set_font("Arial", "B", 16)
-    pdf.cell(200, 10, instituicao_nome, ln=True, align="C")  # Nome da instituição
+    pdf.cell(190, 10, instituicao_nome, ln=True, align="C")  # Nome da instituição
     pdf.set_font("Arial", "I", 12)
-    pdf.cell(200, 10, f"Data do Download: {data_download}", ln=True, align="C")  # Data do download
+    pdf.cell(190, 10, f"Data do Download: {data_download}", ln=True, align="C")  # Data do download
     pdf.ln(10)
 
     # **Título da lista**
     pdf.set_font("Arial", "B", 14)
-    pdf.cell(200, 10, "Lista de Inscrições Aceitas", ln=True, align="C")
+    pdf.cell(190, 10, "Lista de Inscrições Aceitas", ln=True, align="C")
     pdf.ln(10)
 
-    # Tabela
+    # **Tabela**
     pdf.set_font("Arial", "B", 12)
-    pdf.cell(20, 10, "ID", 1)
-    pdf.cell(60, 10, "Nome", 1)
-    pdf.cell(50, 10, "Email", 1)
-    pdf.cell(30, 10, "Telefone", 1)
-    pdf.cell(30, 10, "BI", 1)
-    pdf.cell(40, 10, "Curso", 1)
+
+    # Definição das larguras das colunas com margem de 10 unidades
+    column_widths = [20, 65, 35, 35, 35]
+    headers = ["ID", "Nome", "Telefone", "BI", "Curso"]
+
+    pdf.set_x(10)  # Define um deslocamento para evitar que fique colado à borda
+    for i in range(len(headers)):
+        pdf.cell(column_widths[i], 10, headers[i], 1, 0, "C")
     pdf.ln()
 
     pdf.set_font("Arial", "", 12)
     for inscricao in inscricoes:
-        pdf.cell(20, 10, str(inscricao.id), 1)
-        pdf.cell(60, 10, inscricao.aluno.nome_completo, 1)
-        pdf.cell(50, 10, inscricao.aluno.email, 1)
-        pdf.cell(30, 10, inscricao.aluno.telefone, 1)
-        pdf.cell(30, 10, inscricao.aluno.numero_bi, 1)
-        pdf.cell(40, 10, inscricao.curso, 1)
+        pdf.set_x(10)  # Mantém a margem em todas as linhas
+        pdf.cell(column_widths[0], 10, str(inscricao.id), 1, 0, "C")
+        pdf.cell(column_widths[1], 10, inscricao.aluno.nome_completo, 1, 0, "C")
+        pdf.cell(column_widths[2], 10, inscricao.aluno.telefone, 1, 0, "C")
+        pdf.cell(column_widths[3], 10, inscricao.aluno.numero_bilhete, 1, 0, "C")
+        pdf.cell(column_widths[4], 10, inscricao.curso, 1, 0, "C")
         pdf.ln()
+
+    # **Rodapé com EduPortal**
+    pdf.ln(10)
+    pdf.set_font("Arial", "B", 14)
+
+    pdf.set_text_color(0, 0, 255)  # Azul
+    pdf.cell(95, 10, "Edu", ln=False, align="R")  # Alinha à direita do centro
+
+    pdf.set_text_color(255, 165, 0)  # Laranja
+    pdf.cell(0, 10, "Portal", ln=True, align="L")  # Alinha a palavra "Portal" à esquerda do centro
+
+    pdf.set_text_color(0, 0, 0)  # Resetando para preto
+    pdf.set_font("Arial", "I", 10)
+    pdf.cell(190, 10, "Conectando Estudantes ao Futuro!", ln=True, align="C")  # Slogan
 
     response = Response(pdf.output(dest="S").encode("latin1"))
     response.headers["Content-Type"] = "application/pdf"
