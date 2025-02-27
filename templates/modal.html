@@ -1,25 +1,31 @@
-{% with messages = get_flashed_messages() %}
-    {% if messages %}
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                var myModal = new bootstrap.Modal(document.getElementById('documentoModal'));
-                myModal.show();
-            });
-        </script>
-
-        <!-- Modal de Bootstrap -->
-        <div class="modal fade" id="documentoModal" tabindex="-1" aria-labelledby="documentoModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="documentoModalLabel">{{ messages[0]['titulo'] }}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+{% with messages = get_flashed_messages(with_categories=True) %}
+{% if messages %}
+    <div aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3" style="z-index: 1050">
+        {% for category, message in messages %}
+            <div class="toast align-items-center text-white border-0 show bg-{{ category }}" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        {{ message }}
                     </div>
-                    <div class="modal-body">
-                        <p>{{ messages[0]['corpo'] }}</p>
-                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
             </div>
-        </div>
-    {% endif %}
-    {% endwith %} 
+        {% endfor %}
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var toastElements = document.querySelectorAll(".toast");
+            toastElements.forEach(function (toastEl) {
+                var toast = new bootstrap.Toast(toastEl);
+                toast.show();
+
+                // Fechar após 5 segundos automaticamente
+                setTimeout(() => {
+                    toast.hide();
+                }, 5000);
+            });
+        });
+    </script>
+{% endif %}
+{% endwith %}
