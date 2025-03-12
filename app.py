@@ -337,8 +337,9 @@ def cadastro():
                 data_nascimento = datetime.strptime(
                     request.form['dataNascimento'], '%Y-%m-%d').date()
             except ValueError:
-                flash(
-                    {'titulo': 'Erro', 'corpo': 'Data de nascimento inválida! Use o formato AAAA-MM-DD.'})
+                flash('Erro: Data de nascimento inválida! Use o formato AAAA-MM-DD.', 'erro')
+                adicionar_log('Data de nascimento inválida! Use o formato AAAA-MM-DD.', tipo='erro',
+                              tipo_usuario='aluno')
                 return redirect(url_for('cadastro'))
 
             # Coletar outros dados do formulário Preencha
@@ -379,8 +380,7 @@ def cadastro():
             db.session.add(novo_aluno)
             db.session.commit()
 
-            flash({'titulo': 'Cadastro realizado com sucesso!',
-                   'corpo': 'Faça login para continuar.'})
+            flash('Cadastro realizado com sucesso! Faça login para continuar.', 'success')
             adicionar_log(f'Novo aluno cadastrado: {novo_aluno.nome_completo}',
                           tipo='informação', usuario=novo_aluno, tipo_usuario='aluno')
 
@@ -400,14 +400,13 @@ def cadastro():
             else:
                 corpo_mensagem = f"Erro no banco de dados: {mensagem}"
 
-            flash({'titulo': 'Erro no cadastro', 'corpo': corpo_mensagem})
+            flash(f'Erro no cadastro: {corpo_mensagem}', 'error')
             adicionar_log(f'Erro de banco de dados ao cadastrar aluno: {corpo_mensagem}',
                           tipo='erro', usuario=None, tipo_usuario='aluno')
             return redirect(url_for('cadastro'))
 
         except Exception as e:
-            flash({'titulo': 'Erro inesperado',
-                   'corpo': f'Erro inesperado: {str(e)}'})
+            flash(f'Erro inesperado: {str(e)}', 'error')
             adicionar_log(f'Erro inesperado ao cadastrar aluno: {str(e)}',
                           tipo='erro', usuario=None, tipo_usuario='aluno')
             return redirect(url_for('cadastro'))
@@ -424,9 +423,9 @@ def upload(user_id):
         try:
             # Verificar se os arquivos foram enviados
             if 'frente_bilhete' not in request.files or 'verso_bilhete' not in request.files or 'certificado' not in request.files:
-                flash(
-                    {'titulo': 'Erro',
-                        'corpo': 'Faltam arquivos! Por favor, envie todos os arquivos solicitados.'})
+                flash('Erro: Faltam arquivos! Por favor, envie todos os arquivos solicitados.', 'error')
+                adicionar_log(f'Erro no upload: Faltam arquivos para o aluno {current_user.nome_completo}.',
+                              tipo='erro', usuario=current_user, tipo_usuario='aluno')
                 return redirect(url_for('upload', user_id=user_id))
 
             frente_bilhete = request.files['frente_bilhete']
@@ -444,44 +443,36 @@ def upload(user_id):
                 certificado_filename = f"certificado_{user_id}.jpg"
 
                 # Salvar os arquivos com nome seguro
-                frente_bilhete.save(os.path.join(
-                    app.config['UPLOAD_FOLDER'], frente_filename))
-                verso_bilhete.save(os.path.join(
-                    app.config['UPLOAD_FOLDER'], verso_filename))
-                certificado.save(os.path.join(
-                    app.config['UPLOAD_FOLDER'], certificado_filename))
+                frente_bilhete.save(os.path.join(app.config['UPLOAD_FOLDER'], frente_filename))
+                verso_bilhete.save(os.path.join(app.config['UPLOAD_FOLDER'], verso_filename))
+                certificado.save(os.path.join(app.config['UPLOAD_FOLDER'], certificado_filename))
 
                 # Atualizar os caminhos dos documentos no banco de dados
                 aluno = Aluno.query.get(user_id)
-                aluno.frente_bilhete_path = os.path.join(
-                    app.config['UPLOAD_FOLDER'], frente_filename)
-                aluno.verso_bilhete_path = os.path.join(
-                    app.config['UPLOAD_FOLDER'], verso_filename)
-                aluno.certificado_path = os.path.join(
-                    app.config['UPLOAD_FOLDER'], certificado_filename)
+                aluno.frente_bilhete_path = os.path.join(app.config['UPLOAD_FOLDER'], frente_filename)
+                aluno.verso_bilhete_path = os.path.join(app.config['UPLOAD_FOLDER'], verso_filename)
+                aluno.certificado_path = os.path.join(app.config['UPLOAD_FOLDER'], certificado_filename)
                 db.session.commit()
 
-                adicionar_log(f'Upload de documentos realizado com sucesso para o aluno {current_user.nome_completo}',
+                adicionar_log(f'Upload de documentos realizado com sucesso para o aluno {current_user.nome_completo}.',
                               tipo='informação', usuario=current_user, tipo_usuario='aluno')
-                flash({'titulo': 'Sucesso',
-                       'corpo': 'Documentos enviados com sucesso!'})
+                flash('Sucesso: Documentos enviados com sucesso!', 'success')
                 return redirect(url_for('portal_estudante', aluno=current_user))
 
             else:
-                flash(
-                    {'titulo': 'Erro', 'corpo': 'Formato de arquivo inválido! Certifique-se de que os arquivos são do tipo permitido.'})
-                adicionar_log(f'Erro ao tentar fazer upload de documentos para o aluno {current_user.nome_completo} - Formato de arquivo inválido.',
+                flash('Erro: Formato de arquivo inválido! Certifique-se de que os arquivos são do tipo permitido.', 'error')
+                adicionar_log(f'Erro no upload: Formato de arquivo inválido para o aluno {current_user.nome_completo}.',
                               tipo='erro', usuario=current_user, tipo_usuario='aluno')
                 return redirect(url_for('upload', user_id=user_id))
 
         except Exception as e:
-            flash({'titulo': 'Erro Durante o Upload',
-                   'corpo': f'Erro inesperado ao processar o upload: {str(e)}'})
-            adicionar_log(f'Erro ao tentar fazer upload de documentos para o aluno {current_user.nome_completo}: {str(e)}',
+            flash(f'Erro: Erro inesperado ao processar o upload: {str(e)}', 'error')
+            adicionar_log(f'Erro inesperado ao tentar fazer upload de documentos para o aluno {current_user.nome_completo}: {str(e)}.',
                           tipo='erro', usuario=current_user, tipo_usuario='aluno')
             return redirect(url_for('upload', user_id=user_id))
 
     return render_template('upload.html', user_id=user_id)
+
 
 # Login route
 
@@ -493,9 +484,7 @@ def login():
         senha = request.form.get('password')
 
         if not email or not senha:
-            flash({
-                'titulo': 'Aviso',
-                'corpo': 'Preencha todos os campos!'})
+            flash('Preencha todos os campos!', 'error')
             return render_template('login.html')
 
         # Verifica nas três tabelas
@@ -519,12 +508,13 @@ def login():
         if user:
             session['user_type'] = user_type  # Salva o tipo do usuário
             login_user(user)
-            # adicionar_log(f'Usuário {current_user.nome_completo} fez login com sucesso',
-            #              tipo='informação', usuario=current_user, tipo_usuario=current_user.tipo)
 
-            flash({
-                'titulo': 'Sucesso',
-                'corpo': 'Login bem-sucedido!'})
+            adicionar_log(
+                f'Usuário {user.nome_completo} fez login com sucesso',
+                tipo='informação', usuario=user, tipo_usuario=user_type
+            )
+
+            flash('Login bem-sucedido!', 'success')
 
             # Redirecionamento baseado no tipo
             if user_type == "aluno":
@@ -535,11 +525,13 @@ def login():
                 return redirect(url_for('painel_admin'))
         else:
             adicionar_log(
-                f"Falha ao tentar login com email: {request.form['email']}", tipo='erro', usuario=None, tipo_usuario='desconhecido')
+                f"Falha ao tentar login com email: {email}", tipo='erro', usuario=None, tipo_usuario='desconhecido'
+            )
 
-            flash("Credenciais inválidas. Verifique o email e a senha.", "danger")
+            flash("Credenciais inválidas. Verifique o email e a senha.", "error")
 
     return render_template('login.html')
+
 
 # Função para verificar se o aluno tem todos os documentos
 def verificar_documentos_completos(aluno):
@@ -576,6 +568,13 @@ def portal_estudante():
         escolas=escolas,
         aluno=current_user
     )
+
+
+from flask import Response, abort, flash
+from fpdf import FPDF
+from datetime import datetime
+
+
 @app.route('/download_certificado/<int:inscricao_id>')
 @aluno_required
 @login_required
@@ -584,9 +583,17 @@ def download_certificado(inscricao_id):
 
     # Verifica se a inscrição pertence ao aluno logado e se está "Aceite"
     if inscricao.aluno_id != current_user.id or inscricao.status != "Aceite":
-        return "Você não tem permissão para baixar este certificado.", 403
+        adicionar_log(f"Tentativa não autorizada de download do certificado (ID: {inscricao_id})",
+                      tipo='erro', usuario=current_user, tipo_usuario='aluno')
+        flash("Você não tem permissão para baixar este certificado.", "danger")
+        return abort(403)
+
+    adicionar_log(f"Certificado baixado com sucesso (ID: {inscricao_id})",
+                  tipo='informação', usuario=current_user, tipo_usuario='aluno')
+    flash("Download do certificado iniciado.", "success")
 
     return gerar_certificado_pdf(inscricao)
+
 
 def gerar_certificado_pdf(inscricao):
     pdf = FPDF()
@@ -604,14 +611,12 @@ def gerar_certificado_pdf(inscricao):
 
     # Corpo do certificado
     pdf.set_font("Arial", "", 12)
-    texto_certificado = f"""
-Certificamos que {inscricao.aluno.nome_completo}, portador do BI número {inscricao.aluno.numero_bilhete}, 
-foi oficialmente aceito no curso de {inscricao.curso} na instituição {inscricao.instituicao.nome_instituicao}. 
-
-A inscrição foi realizada e processada através da plataforma EduPortal, garantindo transparência e eficiência no processo seletivo.
-
-Este certificado pode ser utilizado como comprovativo da aceitação do aluno para fins acadêmicos e administrativos.
-    """
+    texto_certificado = (
+        f"Certificamos que {inscricao.aluno.nome_completo}, portador do BI número {inscricao.aluno.numero_bilhete}, "
+        f"foi oficialmente aceito no curso de {inscricao.curso} na instituição {inscricao.instituicao.nome_instituicao}.\n\n"
+        "A inscrição foi realizada e processada através da plataforma EduPortal, garantindo transparência e eficiência no processo seletivo.\n\n"
+        "Este certificado pode ser utilizado como comprovativo da aceitação do aluno para fins acadêmicos e administrativos."
+    )
     pdf.multi_cell(0, 10, texto_certificado)
     pdf.ln(10)
 
@@ -620,35 +625,37 @@ Este certificado pode ser utilizado como comprovativo da aceitação do aluno pa
     pdf.cell(200, 10, f"Data de Emissão: {datetime.now().strftime('%d/%m/%Y')}", ln=True, align="L")
     pdf.ln(20)
 
-
     # Marca EduPortal
     pdf.set_font("Arial", "B", 10)
     pdf.set_text_color(0, 102, 204)  # Azul
     pdf.cell(200, 10, "EduPortal - Facilitando a sua educação", ln=True, align="C")
 
+    # Gera o PDF e retorna como resposta
     response = Response(pdf.output(dest="S").encode("latin1"))
     response.headers["Content-Type"] = "application/pdf"
     response.headers["Content-Disposition"] = "attachment; filename=certificado.pdf"
+
     return response
+
 
 @app.route('/editar_perfil', methods=['GET', 'POST'])
 @aluno_required
 @login_required
 def editar_perfil():
-    aluno = Aluno.query.get(current_user.id)
+    aluno = Aluno.query.get_or_404(current_user.id)
 
     if request.method == 'POST':
-        # Obtenha os dados do formulário
         email = request.form.get('email')
         telefone = request.form.get('telefone')
         senha = request.form.get('senha')
         confirmar_senha = request.form.get('confirmar_senha')
 
-        # Atualize apenas os campos que podem ser editados
-        aluno.email = email
-        aluno.telefone = telefone
+        # Verifica se o e-mail já está sendo usado por outro aluno
+        if email and email != aluno.email and Aluno.query.filter(Aluno.email == email, Aluno.id != aluno.id).first():
+            flash("Este e-mail já está em uso.", "danger")
+            return redirect(url_for('portal_estudante') + '#perfil')
 
-        # Verifique se o campo de senha foi preenchido
+        # Verifica se a senha foi alterada
         if senha:
             if senha != confirmar_senha:
                 flash("As senhas não coincidem.", "danger")
@@ -658,42 +665,54 @@ def editar_perfil():
                 flash("Escolha uma senha diferente da atual.", "warning")
                 return redirect(url_for('portal_estudante') + '#perfil')
 
-            current_user.senha = generate_password_hash(senha)
+            aluno.senha = generate_password_hash(senha)
 
-        # Salve as alterações no banco de dados
-        db.session.commit()
-        flash('Informações atualizadas com sucesso!', 'success')
+        # Atualiza apenas se houver mudanças
+        if email != aluno.email or telefone != aluno.telefone or senha:
+            aluno.email = email
+            aluno.telefone = telefone
+
+            db.session.commit()
+            adicionar_log(f"Perfil atualizado: {aluno.nome_completo} (ID: {aluno.id})",
+                          tipo='informação', usuario=aluno, tipo_usuario='aluno')
+            flash("Informações atualizadas com sucesso!", "success")
+
         return redirect(url_for('portal_estudante') + '#perfil')
 
     return redirect(url_for('portal_estudante') + '#perfil')
 
-# Rota para criar uma inscrição
+
 @app.route('/criar_inscricao', methods=['POST'])
 @aluno_required
 @login_required
 def criar_inscricao():
-    aluno = Aluno.query.filter_by(id=current_user.id).first()
-    if not aluno:
-        flash('Apenas alunos podem fazer inscrições.', 'danger')
-        return redirect(url_for('portal_estudante') + '#inscricoes')
+    aluno = Aluno.query.get_or_404(current_user.id)
 
     if not verificar_documentos_completos(aluno):
         flash('Complete todos os documentos para fazer a inscrição.', 'danger')
         return redirect(url_for('portal_estudante') + '#inscricoes')
 
     escola_id = request.form.get('escola')
-    curso = request.form.get('curso')  # Pegar o curso selecionado no formulário
+    curso = request.form.get('curso')  # Curso selecionado pelo aluno
 
-    escola = Instituicao.query.get(escola_id)
-    if not escola:
-        flash('Escola inválida.', 'danger')
+    escola = Instituicao.query.get_or_404(escola_id)
+
+    # Verifica se a escola oferece o curso escolhido
+    if curso not in [c.nome for c in escola.cursos]:  # Supondo que escola.cursos é uma lista de objetos
+        flash('O curso selecionado não está disponível nesta escola.', 'danger')
         return redirect(url_for('portal_estudante') + '#inscricoes')
 
-    # Contar quantas inscrições esse aluno já tem na escola
+    # Conta quantas inscrições o aluno tem nesta escola
     total_inscricoes = Inscricao.query.filter_by(aluno_id=aluno.id, instituicao_id=escola_id).count()
 
     if total_inscricoes >= 2:
         flash('Você já atingiu o limite de inscrições para esta escola.', 'warning')
+        return redirect(url_for('portal_estudante') + '#inscricoes')
+
+    # Verifica se já existe uma inscrição para o mesmo curso nesta escola
+    inscricao_existente = Inscricao.query.filter_by(aluno_id=aluno.id, instituicao_id=escola_id, curso=curso).first()
+    if inscricao_existente:
+        flash('Você já se inscreveu neste curso nesta escola.', 'warning')
         return redirect(url_for('portal_estudante') + '#inscricoes')
 
     # Criar a nova inscrição
@@ -706,8 +725,13 @@ def criar_inscricao():
     db.session.add(nova_inscricao)
     db.session.commit()
 
+    # Registra no log a nova inscrição
+    adicionar_log(f"Nova inscrição criada: {aluno.nome_completo} para {curso} em {escola.nome_instituicao}",
+                  tipo='inscricao', usuario=aluno, tipo_usuario='aluno')
+
     flash('Inscrição realizada com sucesso!', 'success')
     return redirect(url_for('portal_estudante') + '#inscricoes')
+
 
 
 
@@ -717,7 +741,7 @@ def criar_inscricao():
 @login_required
 @aluno_required
 def cancelar_inscricao(inscricao_id):
-    # Verifica se a inscrição é do aluno logado e se está pendente
+    # Busca a inscrição do aluno logado que está com status 'Pendente'
     inscricao = Inscricao.query.filter_by(
         id=inscricao_id,
         aluno_id=current_user.id,
@@ -728,22 +752,17 @@ def cancelar_inscricao(inscricao_id):
         flash('Inscrição não encontrada ou não pode ser cancelada.', 'danger')
         return redirect(url_for('portal_estudante') + '#inscricoes')
 
-    # Deleta a inscrição
+    # Deleta a inscrição do banco de dados
     db.session.delete(inscricao)
     db.session.commit()
+
+    # Registra o cancelamento no log
+    adicionar_log(f"Inscrição cancelada: {inscricao.curso} na instituição {inscricao.instituicao.nome_instituicao} por {current_user.nome_completo}",
+                  tipo='cancelamento', usuario=current_user, tipo_usuario='aluno')
 
     flash('Inscrição cancelada com sucesso.', 'success')
     return redirect(url_for('portal_estudante') + '#inscricoes')
 
-
-#@app.route('/portal_estudante')
-#@login_required
-#@aluno_required
-#def portal_estudante():
-    # Página do portal do estudante
-    #return render_template('portal_estudante.html', aluno=current_user)
-
-# Rota do Painel Admin
 # Rota do Painel Admin
 @app.route('/painel_admin', methods=['GET', 'POST'])
 @login_required
@@ -751,54 +770,51 @@ def cancelar_inscricao(inscricao_id):
 def painel_admin():
     # Verifica se há dados salvos na sessão
     alunos = []
-    search = ''
+    search = session.pop('search', '')  # Obtém e remove a pesquisa da sessão
+    alunos_ids = session.pop('alunos', None)  # Obtém e remove IDs da sessão
 
-    if 'alunos' in session:
-        alunos_ids = session.pop('alunos')  # Remove os dados após usar
+    if alunos_ids:
         alunos = Aluno.query.filter(Aluno.id.in_(alunos_ids)).all()
 
-    if 'search' in session:
-        search = session.pop('search')
-
-    # Se não houver dados na sessão, lista todos
+    # Se não houver dados na sessão, lista todos os alunos
     if not alunos:
         alunos = Aluno.query.all()
 
+    # Consultas otimizadas para reduzir acessos ao banco
     logs_sistema = Log.query.order_by(Log.data_hora.desc()).limit(30).all()
-    total_alunos = Aluno.query.count()
-    total_instituicoes = Instituicao.query.count()
-
-    alunos_recentes = Aluno.query.order_by(
-        Aluno.created_at.desc()).limit(5).all()
+    alunos_recentes = Aluno.query.order_by(Aluno.created_at.desc()).limit(5).all()
     instituicoes = Instituicao.query.all()
+    total_alunos, total_instituicoes = db.session.query(
+        db.func.count(Aluno.id), db.func.count(Instituicao.id)
+    ).first()
 
-    por_concluir = InteresseInstituicao.query.filter_by(
-        status='pendente').all()
-    nao_concluir = InteresseInstituicao.query.filter_by(
-        status='concluido').all()
-    agora = datetime.now()
+    # Processamento de interesses
+    interesses = InteresseInstituicao.query.all()
+    por_concluir = [i for i in interesses if i.status == 'pendente']
+    nao_concluir = [i for i in interesses if i.status == 'concluido']
 
     # Mensagens no painel administrativo
     mensagens_nao_lidas = Mensagem.query.filter_by(lida=False).all()
-    total_mensagens_nao_lidas = Mensagem.query.filter_by(lida=False).count()
+    total_mensagens_nao_lidas = len(mensagens_nao_lidas)
     mensagens_lidas = Mensagem.query.filter_by(lida=True).all()
 
-    return render_template('painel_admin.html',
-                           agora=agora,
-                           admin=current_user,
-                           alunos=alunos,
-                           search=search,
-                           logs_sistema=logs_sistema,
-                           total_alunos=total_alunos,
-                           alunos_recentes=alunos_recentes,
-                           por_concluir=por_concluir,
-                           nao_concluir=nao_concluir,
-                           total_instituicoes=total_instituicoes,
-                           instituicoes=instituicoes,
-                           mensagens_nao_lidas=mensagens_nao_lidas,
-                           mensagens_lidas=mensagens_lidas,
-                           total_mensagens_nao_lidas=total_mensagens_nao_lidas
-                           )
+    return render_template(
+        'painel_admin.html',
+        agora=datetime.now(),
+        admin=current_user,
+        alunos=alunos,
+        search=search,
+        logs_sistema=logs_sistema,
+        total_alunos=total_alunos,
+        alunos_recentes=alunos_recentes,
+        por_concluir=por_concluir,
+        nao_concluir=nao_concluir,
+        total_instituicoes=total_instituicoes,
+        instituicoes=instituicoes,
+        mensagens_nao_lidas=mensagens_nao_lidas,
+        mensagens_lidas=mensagens_lidas,
+        total_mensagens_nao_lidas=total_mensagens_nao_lidas
+    )
 
 
 # Marcar mensagem como lida/não lida
@@ -809,14 +825,33 @@ def marcar_mensagem(mensagem_id):
     mensagem = Mensagem.query.get(mensagem_id)
 
     if not mensagem:
-        flash({'titulo': 'Erro', 'corpo': 'Mensagem não encontrada.'}, 'danger')
+        flash('Mensagem não encontrada.', 'danger')
+
+        # Log de erro no banco de dados
+        adicionar_log(
+            mensagem=f"Tentativa de marcar mensagem inexistente (ID: {mensagem_id})",
+            tipo="erro",
+            usuario=current_user,
+            tipo_usuario="admin"
+        )
+
         return redirect(url_for('painel_admin') + '#mensagens')
 
     # Alterna entre lida e não lida
     mensagem.lida = not mensagem.lida
     db.session.commit()
 
-    flash({'titulo': 'Sucesso', 'corpo': 'Status da mensagem atualizado.'})
+    status = "lida" if mensagem.lida else "não lida"
+    flash(f'Status da mensagem atualizado para {status}.', 'success')
+
+    # Log de sucesso no banco de dados
+    adicionar_log(
+        mensagem=f"Mensagem ID {mensagem_id} marcada como {status} pelo admin {current_user.id}",
+        tipo="informação",
+        usuario=current_user,
+        tipo_usuario="admin"
+    )
+
     return redirect(url_for('painel_admin') + '#mensagens')
 
 
@@ -828,14 +863,33 @@ def deletar_mensagem(mensagem_id):
     mensagem = Mensagem.query.get(mensagem_id)
 
     if not mensagem:
-        flash({'titulo': 'Erro', 'corpo': 'Mensagem não encontrada.'}, 'danger')
+        flash('Mensagem não encontrada.', 'danger')
+
+        # Log de erro no banco de dados
+        adicionar_log(
+            mensagem=f"Tentativa de deletar mensagem inexistente (ID: {mensagem_id})",
+            tipo="erro",
+            usuario=current_user,
+            tipo_usuario="admin"
+        )
+
         return redirect(url_for('painel_admin') + '#mensagens')
 
     db.session.delete(mensagem)
     db.session.commit()
 
-    flash({'titulo': 'Sucesso', 'corpo': 'Mensagem excluída com sucesso.'})
+    flash('Mensagem excluída com sucesso.', 'success')
+
+    # Log de sucesso no banco de dados
+    adicionar_log(
+        mensagem=f"Mensagem ID {mensagem_id} deletada pelo admin {current_user.id}",
+        tipo="informação",
+        usuario=current_user,
+        tipo_usuario="admin"
+    )
+
     return redirect(url_for('painel_admin') + '#mensagens')
+
 
 
 @app.route('/buscar_alunos', methods=['GET'])
@@ -883,6 +937,15 @@ def atualizar_aluno(aluno_id):
                 request.form['data_nascimento'], '%Y-%m-%d').date()
         except ValueError:
             flash('Erro: Data de nascimento inválida. Use o formato AAAA-MM-DD.', 'danger')
+
+            # Log de erro
+            adicionar_log(
+                mensagem=f"Tentativa de atualizar aluno ID {aluno_id} com data de nascimento inválida.",
+                tipo="erro",
+                usuario=current_user,
+                tipo_usuario="admin"
+            )
+
             return redirect(url_for('painel_admin') + '#alunos')
 
         # Atualizar senha se fornecida
@@ -893,11 +956,28 @@ def atualizar_aluno(aluno_id):
         db.session.commit()
         flash('Dados do aluno atualizados com sucesso!', 'success')
 
+        # Log de sucesso
+        adicionar_log(
+            mensagem=f"Admin {current_user.id} atualizou os dados do aluno ID {aluno_id}.",
+            tipo="informação",
+            usuario=current_user,
+            tipo_usuario="admin"
+        )
+
     except Exception as e:
         db.session.rollback()
         flash(f'Erro ao atualizar o aluno: {str(e)}', 'danger')
 
+        # Log de erro
+        adicionar_log(
+            mensagem=f"Erro ao atualizar aluno ID {aluno_id}: {str(e)}",
+            tipo="erro",
+            usuario=current_user,
+            tipo_usuario="admin"
+        )
+
     return redirect(url_for('painel_admin') + '#alunos')
+
 
 
 @app.route('/deletar_aluno/<int:aluno_id>', methods=['POST'])
@@ -911,9 +991,25 @@ def deletar_aluno(aluno_id):
         db.session.commit()
         flash('Aluno excluído com sucesso!', 'success')
 
+        # Log de sucesso
+        adicionar_log(
+            mensagem=f"Admin {current_user.id} excluiu o aluno ID {aluno_id}.",
+            tipo="informação",
+            usuario=current_user,
+            tipo_usuario="admin"
+        )
+
     except Exception as e:
         db.session.rollback()
         flash(f'Erro ao excluir aluno: {str(e)}', 'danger')
+
+        # Log de erro
+        adicionar_log(
+            mensagem=f"Erro ao excluir aluno ID {aluno_id}: {str(e)}",
+            tipo="erro",
+            usuario=current_user,
+            tipo_usuario="admin"
+        )
 
     return redirect(url_for('painel_admin') + '#alunos')
 
@@ -923,42 +1019,63 @@ def deletar_aluno(aluno_id):
 @funcionario_required
 def portal_instituicao():
     """Portal da Instituição: mostra detalhes e inscrições de alunos"""
-    instituicao = Instituicao.query.filter_by(id=current_user.instituicao_id).first()
-    funcionarios = Funcionario.query.filter_by(instituicao_id=current_user.instituicao_id).all()
-    senha_padrao = check_password_hash(current_user.senha, "12345")
+    try:
+        instituicao = Instituicao.query.filter_by(id=current_user.instituicao_id).first()
+        funcionarios = Funcionario.query.filter_by(instituicao_id=current_user.instituicao_id).all()
+        senha_padrao = check_password_hash(current_user.senha, "12345")
 
-    # Obtendo filtros da URL
-    media_min = request.args.get('media_min', type=float)
-    idade_min = request.args.get('idade_min', type=int)
-    status_filtro = request.args.get('status')
+        # Obtendo filtros da URL
+        media_min = request.args.get('media_min', type=float)
+        idade_min = request.args.get('idade_min', type=int)
+        status_filtro = request.args.get('status')
 
-    # Buscar apenas alunos com inscrições nesta instituição
-    inscricoes_query = Inscricao.query.filter_by(instituicao_id=current_user.instituicao_id)
+        # Buscar apenas alunos com inscrições nesta instituição
+        inscricoes_query = Inscricao.query.filter_by(instituicao_id=current_user.instituicao_id)
 
-    # Aplicando filtros
-    if media_min:
-        inscricoes_query = inscricoes_query.join(Aluno).filter(Aluno.media_final >= media_min)
+        # Aplicando filtros
+        if media_min:
+            inscricoes_query = inscricoes_query.join(Aluno).filter(Aluno.media_final >= media_min)
 
-    if idade_min:
-        ano_atual = datetime.now().year
-        inscricoes_query = inscricoes_query.join(Aluno).filter(
-            (ano_atual - extract('year', Aluno.data_nascimento)) >= idade_min
+        if idade_min:
+            ano_atual = datetime.now().year
+            inscricoes_query = inscricoes_query.join(Aluno).filter(
+                (ano_atual - extract('year', Aluno.data_nascimento)) >= idade_min
+            )
+
+        if status_filtro and status_filtro != "Todos":
+            inscricoes_query = inscricoes_query.filter_by(status=status_filtro)
+
+        inscricoes = inscricoes_query.all()
+
+        # Log de acesso bem-sucedido
+        adicionar_log(
+            mensagem=f"Funcionário {current_user.id} acessou o portal da instituição ID {current_user.instituicao_id}.",
+            tipo="informação",
+            usuario=current_user,
+            tipo_usuario="funcionario"
         )
 
-    if status_filtro and status_filtro != "Todos":
-        inscricoes_query = inscricoes_query.filter_by(status=status_filtro)
+        return render_template(
+            'portal_instituicao.html',
+            user=current_user,
+            instituicao=instituicao,
+            funcionarios=funcionarios,
+            senha_padrao=senha_padrao,
+            inscricoes=inscricoes,
+            ano_atual=datetime.now().year  # Passando o ano atual para o template
+        )
 
-    inscricoes = inscricoes_query.all()
+    except Exception as e:
+        # Log de erro
+        adicionar_log(
+            mensagem=f"Erro ao acessar portal da instituição ID {current_user.instituicao_id}: {str(e)}",
+            tipo="erro",
+            usuario=current_user,
+            tipo_usuario="funcionario"
+        )
 
-    return render_template(
-        'portal_instituicao.html',
-        user=current_user,
-        instituicao=instituicao,
-        funcionarios=funcionarios,
-        senha_padrao=senha_padrao,
-        inscricoes=inscricoes,
-        ano_atual=datetime.now().year  # Passando o ano atual para o template
-    )
+        flash("Erro ao carregar o portal da instituição. Tente novamente.", "danger")
+        return redirect(url_for('dashboard'))
 
 @app.route('/atualizar_inscricao/<int:inscricao_id>', methods=['POST'])
 @login_required
@@ -974,88 +1091,121 @@ def atualizar_inscricao(inscricao_id):
     acao = request.form.get('acao')
     mensagem = request.form.get('mensagem')  # Captura a mensagem do formulário
 
-    if acao == "aceitar":
-        inscricao.status = "Aceite"
-        flash("Inscrição aceita com sucesso!", "success")
-    elif acao == "rejeitar":
-        inscricao.status = "Rejeitado"
-        flash("Inscrição rejeitada.", "warning")
+    if acao not in ["aceitar", "rejeitar"]:
+        flash("Ação inválida.", "danger")
+        return redirect(url_for('portal_instituicao'))
 
-    # Salva a mensagem se houver
-    if mensagem:
-        inscricao.mensagem_instituicao = mensagem
-        flash("Mensagem enviada com sucesso!", "info")
+    try:
+        # Atualiza status da inscrição
+        status_anterior = inscricao.status
+        inscricao.status = "Aceite" if acao == "aceitar" else "Rejeitado"
 
-    db.session.commit()
+        # Salva a mensagem se houver
+        if mensagem:
+            inscricao.mensagem_instituicao = mensagem
+
+        db.session.commit()
+
+        # Log de alteração
+        adicionar_log(
+            mensagem=f"Inscrição {inscricao.id} alterada de '{status_anterior}' para '{inscricao.status}' por {current_user.nome}.",
+            tipo="informação",
+            usuario=current_user,
+            tipo_usuario="funcionario"
+        )
+
+        # Flash único consolidado
+        flash(f"Inscrição {inscricao.status.lower()} com sucesso!{ ' Mensagem enviada.' if mensagem else '' }", "success")
+
+    except Exception as e:
+        db.session.rollback()
+        adicionar_log(
+            mensagem=f"Erro ao atualizar inscrição {inscricao.id}: {str(e)}",
+            tipo="erro",
+            usuario=current_user,
+            tipo_usuario="funcionario"
+        )
+        flash("Erro ao atualizar inscrição. Tente novamente.", "danger")
+
     return redirect(url_for('portal_instituicao'))
+
 
 
 @app.route('/download_lista_pdf')
 @login_required
 @funcionario_required
 def download_lista_pdf():
-    inscricoes = Inscricao.query.filter_by(status="Aceite", instituicao_id=current_user.instituicao_id).all()
+    try:
+        inscricoes = Inscricao.query.filter_by(status="Aceite", instituicao_id=current_user.instituicao_id).all()
 
-    # Nome da instituição e data do download
-    instituicao_nome = current_user.instituicao.nome_instituicao
-    data_download = datetime.now().strftime("%d/%m/%Y %H:%M")
+        # Nome da instituição e data do download
+        instituicao_nome = current_user.instituicao.nome_instituicao
+        data_download = datetime.now().strftime("%d/%m/%Y %H:%M")
 
-    pdf = FPDF()
-    pdf.set_auto_page_break(auto=True, margin=15)
-    pdf.add_page()
+        pdf = FPDF()
+        pdf.set_auto_page_break(auto=True, margin=15)
+        pdf.add_page()
 
-    # **Cabeçalho**
-    pdf.set_font("Arial", "B", 16)
-    pdf.cell(190, 10, instituicao_nome, ln=True, align="C")  # Nome da instituição
-    pdf.set_font("Arial", "I", 12)
-    pdf.cell(190, 10, f"Data do Download: {data_download}", ln=True, align="C")  # Data do download
-    pdf.ln(10)
+        # **Cabeçalho**
+        pdf.set_font("Arial", "B", 16)
+        pdf.cell(190, 10, instituicao_nome, ln=True, align="C")
+        pdf.set_font("Arial", "I", 12)
+        pdf.cell(190, 10, f"Data do Download: {data_download}", ln=True, align="C")
+        pdf.ln(10)
 
-    # **Título da lista**
-    pdf.set_font("Arial", "B", 14)
-    pdf.cell(190, 10, "Lista de Inscrições Aceitas", ln=True, align="C")
-    pdf.ln(10)
+        # **Título da lista**
+        pdf.set_font("Arial", "B", 14)
+        pdf.cell(190, 10, "Lista de Inscrições Aceitas", ln=True, align="C")
+        pdf.ln(10)
 
-    # **Tabela**
-    pdf.set_font("Arial", "B", 12)
+        # **Tabela**
+        pdf.set_font("Arial", "B", 12)
 
-    # Definição das larguras das colunas com margem de 10 unidades
-    column_widths = [20, 65, 35, 35, 35]
-    headers = ["ID", "Nome", "Telefone", "BI", "Curso"]
+        column_widths = [20, 60, 35, 35, 40]
+        headers = ["ID", "Nome", "Telefone", "BI", "Curso"]
 
-    pdf.set_x(10)  # Define um deslocamento para evitar que fique colado à borda
-    for i in range(len(headers)):
-        pdf.cell(column_widths[i], 10, headers[i], 1, 0, "C")
-    pdf.ln()
-
-    pdf.set_font("Arial", "", 12)
-    for inscricao in inscricoes:
-        pdf.set_x(10)  # Mantém a margem em todas as linhas
-        pdf.cell(column_widths[0], 10, str(inscricao.id), 1, 0, "C")
-        pdf.cell(column_widths[1], 10, inscricao.aluno.nome_completo, 1, 0, "C")
-        pdf.cell(column_widths[2], 10, inscricao.aluno.telefone, 1, 0, "C")
-        pdf.cell(column_widths[3], 10, inscricao.aluno.numero_bilhete, 1, 0, "C")
-        pdf.cell(column_widths[4], 10, inscricao.curso, 1, 0, "C")
+        pdf.set_fill_color(200, 200, 200)  # Cinza claro para cabeçalho
+        pdf.set_x(10)
+        for i in range(len(headers)):
+            pdf.cell(column_widths[i], 10, headers[i], 1, 0, "C", fill=True)
         pdf.ln()
 
-    # **Rodapé com EduPortal**
-    pdf.ln(10)
-    pdf.set_font("Arial", "B", 14)
+        pdf.set_font("Arial", "", 12)
+        pdf.set_fill_color(240, 240, 240)  # Alternância de cores para legibilidade
+        fill = False
 
-    pdf.set_text_color(0, 0, 255)  # Azul
-    pdf.cell(95, 10, "Edu", ln=False, align="R")  # Alinha à direita do centro
+        for inscricao in inscricoes:
+            pdf.set_x(10)
+            pdf.cell(column_widths[0], 10, str(inscricao.id), 1, 0, "C", fill=fill)
+            pdf.cell(column_widths[1], 10, inscricao.aluno.nome_completo[:25], 1, 0, "C", fill=fill)  # Truncar nome
+            pdf.cell(column_widths[2], 10, inscricao.aluno.telefone, 1, 0, "C", fill=fill)
+            pdf.cell(column_widths[3], 10, inscricao.aluno.numero_bilhete, 1, 0, "C", fill=fill)
+            pdf.cell(column_widths[4], 10, inscricao.curso[:20], 1, 0, "C", fill=fill)  # Truncar curso
+            pdf.ln()
+            fill = not fill  # Alternar cor de fundo
 
-    pdf.set_text_color(255, 165, 0)  # Laranja
-    pdf.cell(0, 10, "Portal", ln=True, align="L")  # Alinha a palavra "Portal" à esquerda do centro
+        # **Rodapé com EduPortal**
+        pdf.ln(10)
+        pdf.set_font("Arial", "B", 14)
 
-    pdf.set_text_color(0, 0, 0)  # Resetando para preto
-    pdf.set_font("Arial", "I", 10)
-    pdf.cell(190, 10, "Conectando Estudantes ao Futuro!", ln=True, align="C")  # Slogan
+        pdf.set_text_color(0, 0, 255)  # Azul
+        pdf.cell(95, 10, "Edu", ln=False, align="R")
 
-    response = Response(pdf.output(dest="S").encode("latin1"))
-    response.headers["Content-Type"] = "application/pdf"
-    response.headers["Content-Disposition"] = "attachment; filename=lista_aprovados.pdf"
-    return response
+        pdf.set_text_color(255, 165, 0)  # Laranja
+        pdf.cell(0, 10, "Portal", ln=True, align="L")
+
+        pdf.set_text_color(0, 0, 0)  # Resetando para preto
+        pdf.set_font("Arial", "I", 10)
+        pdf.cell(190, 10, "Conectando Estudantes ao Futuro!", ln=True, align="C")
+
+        response = Response(pdf.output(dest="S").encode("latin1"))
+        response.headers["Content-Type"] = "application/pdf"
+        response.headers["Content-Disposition"] = "attachment; filename=lista_aprovados.pdf"
+        return response
+
+    except Exception as e:
+        flash("Erro ao gerar PDF. Tente novamente.", "danger")
+        return redirect(url_for('portal_instituicao'))
 
 @app.route('/funcionario/editar_perfil', methods=['POST'])
 @login_required
@@ -1071,9 +1221,16 @@ def funcionario_editar_perfil():
         flash("Este email já está em uso.", "danger")
         return redirect(url_for('portal_instituicao'))
 
-    # Atualiza email e telefone
-    current_user.email = email
-    current_user.telefone = telefone
+    # Verifica quais informações foram alteradas para registrar no log
+    alteracoes = []
+
+    if current_user.email != email:
+        alteracoes.append(f"Email alterado de {current_user.email} para {email}")
+        current_user.email = email
+
+    if current_user.telefone != telefone:
+        alteracoes.append(f"Telefone alterado de {current_user.telefone} para {telefone}")
+        current_user.telefone = telefone
 
     # Se a senha foi fornecida, verifica e altera
     if nova_senha:
@@ -1086,12 +1243,253 @@ def funcionario_editar_perfil():
             return redirect(url_for('portal_instituicao'))
 
         current_user.senha = generate_password_hash(nova_senha)
+        alteracoes.append("Senha alterada.")
 
     # Salvar mudanças no banco de dados
     db.session.commit()
 
+    # Se houver alterações, registrar no log
+    if alteracoes:
+        mensagem_log = f"O funcionário '{current_user.nome_completo}' atualizou o perfil: " + "; ".join(alteracoes)
+        adicionar_log(mensagem_log, tipo="atualização", usuario=current_user, tipo_usuario="funcionario")
+
     flash("Perfil atualizado com sucesso!", "success")
     return redirect(url_for('portal_instituicao'))
+
+
+@app.route('/remover_funcionario/<int:funcionario_id>', methods=['POST'])
+@login_required
+@funcionario_required
+def remover_funcionario(funcionario_id):
+    """Permite que um funcionário Master remova funcionários da sua instituição."""
+    if current_user.permissao != 'master':
+        flash("Apenas funcionários Master podem remover funcionários!", "danger")
+        return redirect(url_for('portal_instituicao'))
+
+    funcionario = Funcionario.query.get(funcionario_id)
+
+    if not funcionario or funcionario.instituicao_id != current_user.instituicao_id:
+        flash("Funcionário não encontrado ou não pertence à sua instituição!", "danger")
+        return redirect(url_for('portal_instituicao'))
+
+    nome_funcionario = funcionario.nome
+    db.session.delete(funcionario)
+    db.session.commit()
+
+    # Adiciona log da remoção
+    mensagem_log = f"O funcionário '{nome_funcionario}' foi removido da instituição '{current_user.instituicao.nome_instituicao}' por {current_user.nome}."
+    adicionar_log(mensagem_log, tipo="remoção", usuario=current_user, tipo_usuario="admin")
+
+    flash("Funcionário removido com sucesso!", "success")
+    return redirect(url_for('portal_instituicao'))
+
+
+@app.route('/editar_instituicao/<int:instituicao_id>', methods=['POST'])
+@login_required
+@funcionario_required
+def editar_instituicao(instituicao_id):
+    if current_user.permissao != 'master':
+        flash("Você não tem permissão para editar esta instituição.", "danger")
+        return redirect(url_for('portal_instituicao'))
+
+    instituicao = Instituicao.query.get_or_404(instituicao_id)
+
+    # Captura os dados antigos para comparação
+    dados_antigos = {
+        "nome_instituicao": instituicao.nome_instituicao,
+        "email": instituicao.email,
+        "endereco": instituicao.endereco,
+        "cidade": instituicao.cidade,
+        "provincia": instituicao.provincia,
+        "telefone": instituicao.telefone,
+        "descricao": instituicao.descricao,
+        "numero_vagas": instituicao.numero_vagas,
+        "status": instituicao.status,
+        "cursos": instituicao.cursos,
+    }
+
+    # Atualiza os dados da instituição
+    instituicao.nome_instituicao = request.form.get('nome_instituicao')
+    instituicao.email = request.form.get('email')
+    instituicao.endereco = request.form.get('endereco')
+    instituicao.cidade = request.form.get('cidade')
+    instituicao.provincia = request.form.get('provincia')
+    instituicao.telefone = request.form.get('telefone')
+    instituicao.descricao = request.form.get('descricao')
+    instituicao.numero_vagas = request.form.get('numero_vagas')
+    instituicao.status = request.form.get('status')
+    instituicao.cursos = request.form.get('cursos')
+
+    db.session.commit()
+
+    # Captura os dados novos e registra mudanças
+    dados_novos = {
+        "nome_instituicao": instituicao.nome_instituicao,
+        "email": instituicao.email,
+        "endereco": instituicao.endereco,
+        "cidade": instituicao.cidade,
+        "provincia": instituicao.provincia,
+        "telefone": instituicao.telefone,
+        "descricao": instituicao.descricao,
+        "numero_vagas": instituicao.numero_vagas,
+        "status": instituicao.status,
+        "cursos": instituicao.cursos,
+    }
+
+    # Verifica quais dados foram alterados e adiciona ao log
+    alteracoes = []
+    for campo, valor_antigo in dados_antigos.items():
+        valor_novo = dados_novos[campo]
+        if valor_antigo != valor_novo:
+            alteracoes.append(f"{campo}: '{valor_antigo}' → '{valor_novo}'")
+
+    if alteracoes:
+        mensagem_log = f"Instituição '{instituicao.nome_instituicao}' editada por {current_user.nome}. Alterações: " + "; ".join(alteracoes)
+        adicionar_log(mensagem_log, tipo="edição", usuario=current_user, tipo_usuario="admin")
+
+    flash("Informações da instituição atualizadas com sucesso!", "success")
+    return redirect(url_for('portal_instituicao'))
+
+@app.route('/instituicoes')
+def instituicoes():
+    return render_template('txt_instituicoes.html')
+
+
+
+@app.route('/instituicoes/interesse', methods=['GET', 'POST'])
+def interesse():
+    if request.method == 'POST':
+        nome_instituicao = request.form['nome_instituicao']
+        nome_responsavel = request.form['nome_responsavel']
+        email = request.form['email']
+        telefone = request.form['telefone']
+
+        # Salva o interesse no banco de dados
+        novo_interesse = InteresseInstituicao(
+            nome_instituicao=nome_instituicao,
+            nome_responsavel=nome_responsavel,
+            email=email,
+            telefone=telefone
+        )
+        db.session.add(novo_interesse)
+        db.session.commit()
+
+        # Adiciona log do cadastro de interesse
+        adicionar_log(
+            mensagem=f'Novo interesse cadastrado: {nome_instituicao} - Responsável: {nome_responsavel} - Telefone: {telefone}',
+            tipo='informação',
+            tipo_usuario='instituicao'
+        )
+
+        # Diretório para salvar os documentos
+        upload_folder = os.path.join(
+            app.config['UPLOAD_FOLDER'], str(novo_interesse.id))
+        os.makedirs(upload_folder, exist_ok=True)
+
+        # Salvar e renomear os documentos
+        for file in request.files.getlist('documentos'):
+            if file and file.filename.endswith('.pdf'):
+                # Renomeia com o nome da instituição e um índice para evitar conflitos
+                index = request.files.getlist('documentos').index(file) + 1
+                nome_limpo = nome_instituicao.replace(' ', '_').lower()
+                novo_nome = f"{nome_limpo}_{index}.pdf"
+                caminho_arquivo = os.path.join(upload_folder, novo_nome)
+                file.save(caminho_arquivo)
+
+                # Salva as informações no banco de dados
+                novo_documento = Documento(
+                    nome_arquivo=novo_nome,
+                    caminho_arquivo=caminho_arquivo,
+                    interesse_id=novo_interesse.id
+                )
+                db.session.add(novo_documento)
+
+                # Adiciona log do documento salvo
+                adicionar_log(
+                    mensagem=f'Documento salvo: {novo_nome} para {nome_instituicao}',
+                    tipo='informação',
+                    tipo_usuario='instituicao'
+                )
+
+        db.session.commit()
+
+        flash('Suas informações foram recebidas. Entraremos em contato.', 'success')
+        return redirect(url_for('index'))
+
+    return redirect(url_for('instituicoes'))
+
+
+@app.route('/admin/download/<int:interesse_id>/<string:arquivo>', methods=['GET'])
+@admin_required
+@login_required
+def baixar_documento(interesse_id, arquivo):
+    try:
+        # Define o diretório base usando o interesse_id
+        directory = os.path.join('static', 'uploads', str(interesse_id))
+        return send_from_directory(directory=directory, path=arquivo, as_attachment=True)
+    except FileNotFoundError:
+        abort(404)
+
+
+
+@app.route('/admin/concluir/<int:id>', methods=['POST'])
+@admin_required
+@login_required
+def marcar_concluido(id):
+    interesse = InteresseInstituicao.query.get_or_404(id)
+    interesse.status = 'concluido'
+    db.session.commit()
+    flash('Demonstração de interesse marcada como concluída.', 'success')
+    return redirect(url_for('painel_admin') + '#DemonstraçõesDeInteresse')
+
+
+@app.route('/remover_interesse/<int:id>', methods=['POST'])
+@admin_required
+@login_required
+def remover_interesse(id):
+    interesse = InteresseInstituicao.query.get_or_404(id)
+
+    for documento in interesse.documentos:
+        db.session.delete(documento)
+
+    db.session.delete(interesse)
+    db.session.commit()
+
+    flash('Interesse e documentos excluídos com sucesso!', 'success')
+    return redirect(url_for('painel_admin') + '#DemonstraçõesDeInteresse')
+
+@app.route('/criar_instituicao', methods=['GET', 'POST'])
+@admin_required
+@login_required
+def criar_instituicao():
+    if request.method == 'POST':
+        nome_instituicao = request.form['nome_instituicao']
+        nome_master = request.form['nome_master']
+        telefone_master = request.form['telefone_master']
+        senha_padrao = "12345"
+        senha_hash = generate_password_hash(senha_padrao)
+
+        # Cria a Instituição
+        instituicao = Instituicao(nome_instituicao=nome_instituicao)
+        db.session.add(instituicao)
+        db.session.commit()  # Confirma para obter o ID da instituição
+
+        # Cria o Funcionário Master
+        master = Funcionario(
+            nome_completo=nome_master,
+            senha=senha_hash,
+            telefone=telefone_master,
+            permissao='master',
+            instituicao_id=instituicao.id
+        )
+        db.session.add(master)
+        db.session.commit()
+
+        flash('Instituição e Master criados com sucesso!', 'success')
+        return redirect(url_for('painel_admin') + '#criar-instituicoes')
+
+    return redirect(url_for('painel_admin') + '#criar-instituicoes')
+
 
 @app.route('/criar_funcionario', methods=['POST'])
 @login_required
@@ -1127,192 +1525,10 @@ def criar_funcionario():
 
     db.session.add(novo_funcionario)
     db.session.commit()
-
+    mensagem_log = f"O funcionário '{nome_completo}' foi criado na instituição '{current_user.instituicao.nome_instituicao}' por {current_user.nome}."
+    adicionar_log(mensagem_log, tipo="criação", usuario=current_user, tipo_usuario="Funcionario-master")
     flash("Funcionário criado com sucesso!", "success")
     return redirect(url_for('portal_instituicao'))
-
-
-@app.route('/remover_funcionario/<int:funcionario_id>', methods=['POST'])
-@login_required
-@funcionario_required
-def remover_funcionario(funcionario_id):
-    """Permite que um funcionário Master remova funcionários da sua instituição."""
-    if current_user.permissao != 'master':
-        flash("Apenas funcionários Master podem remover funcionários!", "danger")
-        return redirect(url_for('portal_instituicao'))
-
-    funcionario = Funcionario.query.get(funcionario_id)
-
-    if not funcionario or funcionario.instituicao_id != current_user.instituicao_id:
-        flash("Funcionário não encontrado ou não pertence à sua instituição!", "danger")
-        return redirect(url_for('portal_instituicao'))
-
-    db.session.delete(funcionario)
-    db.session.commit()
-
-    flash("Funcionário removido com sucesso!", "success")
-    return redirect(url_for('portal_instituicao'))
-
-@app.route('/editar_instituicao/<int:instituicao_id>', methods=['POST'])
-@login_required
-@funcionario_required
-def editar_instituicao(instituicao_id):
-    if current_user.permissao != 'master':
-        flash("Você não tem permissão para editar esta instituição.", "danger")
-        return redirect(url_for('portal_instituicao'))
-
-    instituicao = Instituicao.query.get_or_404(instituicao_id)
-
-    instituicao.nome_instituicao = request.form.get('nome_instituicao')
-    instituicao.email = request.form.get('email')
-    instituicao.endereco = request.form.get('endereco')
-    instituicao.cidade = request.form.get('cidade')
-    instituicao.provincia = request.form.get('provincia')
-    instituicao.telefone = request.form.get('telefone')
-    instituicao.descricao = request.form.get('descricao')
-    instituicao.numero_vagas = request.form.get('numero_vagas')
-    instituicao.status = request.form.get('status')
-    instituicao.cursos = request.form.get('cursos')
-
-    db.session.commit()
-    flash("Informações da instituição atualizadas com sucesso!", "success")
-    return redirect(url_for('portal_instituicao'))
-
-
-@app.route('/instituicoes')
-def instituicoes():
-    return render_template('txt_instituicoes.html')
-
-
-@app.route('/instituicoes/interesse', methods=['GET', 'POST'])
-def interesse():
-    if request.method == 'POST':
-        nome_instituicao = request.form['nome_instituicao']
-        nome_responsavel = request.form['nome_responsavel']
-        email = request.form['email']
-        telefone = request.form['telefone']
-
-        # Salva o interesse no banco de dados
-        novo_interesse = InteresseInstituicao(
-            nome_instituicao=nome_instituicao,
-            nome_responsavel=nome_responsavel,
-            email=email,
-            telefone=telefone
-        )
-        db.session.add(novo_interesse)
-        db.session.commit()
-
-        # Diretório para salvar os documentos
-        upload_folder = os.path.join(
-            app.config['UPLOAD_FOLDER'], str(novo_interesse.id))
-        os.makedirs(upload_folder, exist_ok=True)
-
-        # Salvar e renomear os documentos
-        for file in request.files.getlist('documentos'):
-            if file and file.filename.endswith('.pdf'):
-                # Renomeia com o nome da instituição e um índice para evitar conflitos
-                index = request.files.getlist('documentos').index(file) + 1
-                nome_limpo = nome_instituicao.replace(' ', '_').lower()
-                novo_nome = f"{nome_limpo}_{index}.pdf"
-                caminho_arquivo = os.path.join(upload_folder, novo_nome)
-                file.save(caminho_arquivo)
-
-                # Salva as informações no banco de dados
-                novo_documento = Documento(
-                    nome_arquivo=novo_nome,
-                    caminho_arquivo=caminho_arquivo,
-                    interesse_id=novo_interesse.id
-                )
-                db.session.add(novo_documento)
-
-        db.session.commit()
-
-        flash('Cadastro realizado com sucesso!', 'success')
-        return redirect(url_for('index'))
-
-    return redirect(url_for('instituicoes'))
-
-
-@app.route('/admin/download/<int:interesse_id>/<string:arquivo>', methods=['GET'])
-@admin_required
-@login_required
-def baixar_documento(interesse_id, arquivo):
-    try:
-        # Define o diretório base usando o interesse_id
-        directory = os.path.join('static', 'uploads', str(interesse_id))
-        return send_from_directory(directory=directory, path=arquivo, as_attachment=True)
-    except FileNotFoundError:
-        abort(404)
-
-
-@app.route('/admin/concluir/<int:id>', methods=['POST'])
-@admin_required
-@login_required
-def marcar_concluido(id):
-    interesse = InteresseInstituicao.query.get_or_404(id)
-    interesse.status = 'concluido'
-    db.session.commit()
-    flash('Demonstração de interesse marcada como concluída.', 'success')
-    return redirect(url_for('painel_admin') + '#DemonstraçõesDeInteresse')
-
-
-@app.route('/remover_interesse/<int:id>', methods=['POST'])
-@admin_required
-@login_required
-def remover_interesse(id):
-    interesse = InteresseInstituicao.query.get_or_404(id)
-
-    for documento in interesse.documentos:
-        db.session.delete(documento)
-
-    db.session.delete(interesse)
-    db.session.commit()
-
-    flash('Interesse e documentos excluídos com sucesso!', 'success')
-    return redirect(url_for('painel_admin') + '#DemonstraçõesDeInteresse')
-
-
-@app.route('/criar_instituicao', methods=['GET', 'POST'])
-@admin_required
-@login_required
-def criar_instituicao():
-    if request.method == 'POST':
-        nome_instituicao = request.form['nome_instituicao']
-        email_instituicao = request.form['email_instituicao']
-        nome_master = request.form['nome_master']
-        email_master = request.form['email_master']
-        senha_padrao = "12345"
-        senha_hash = generate_password_hash(senha_padrao)
-        telefone_master = request.form['telefone_master']
-
-        # Verifica se o email do master já existe
-        existe_master = Funcionario.query.filter_by(email=email_master).first()
-        if existe_master:
-            flash('Já existe um funcionário com este email!', 'danger')
-            return redirect(url_for('painel_admin') + '#criar-instituicoes')
-
-        # Cria a Instituição
-        instituicao = Instituicao(
-            nome_instituicao=nome_instituicao, email=email_instituicao)
-        db.session.add(instituicao)
-        db.session.commit()  # Confirma para obter o ID da instituição
-
-        # Cria o Funcionário Master
-        master = Funcionario(
-            nome_completo=nome_master,
-            email=email_master,
-            senha=senha_hash,
-            telefone=telefone_master,
-            permissao='master',
-            instituicao_id=instituicao.id
-        )
-        db.session.add(master)
-        db.session.commit()
-
-        flash('Instituição e Master criados com sucesso!', 'success')
-        return redirect(url_for('painel_admin') + '#criar-instituicoes')
-
-    return redirect(url_for('painel_admin') + '#criar-instituicoes')
 # Debug
 
 
