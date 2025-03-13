@@ -697,10 +697,7 @@ def criar_inscricao():
 
     escola = Instituicao.query.get_or_404(escola_id)
 
-    # Verifica se a escola oferece o curso escolhido
-    if curso not in [c.nome for c in escola.cursos]:  # Supondo que escola.cursos é uma lista de objetos
-        flash('O curso selecionado não está disponível nesta escola.', 'danger')
-        return redirect(url_for('portal_estudante') + '#inscricoes')
+
 
     # Conta quantas inscrições o aluno tem nesta escola
     total_inscricoes = Inscricao.query.filter_by(aluno_id=aluno.id, instituicao_id=escola_id).count()
