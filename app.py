@@ -1277,7 +1277,7 @@ def remover_funcionario(funcionario_id):
     db.session.commit()
 
     # Adiciona log da remoção
-    mensagem_log = f"O funcionário '{nome_funcionario}' foi removido da instituição '{current_user.instituicao.nome_instituicao}' por {current_user.nome}."
+    mensagem_log = f"O funcionário '{nome_funcionario}' foi removido da instituição '{current_user.instituicao.nome_instituicao}' por {current_user.nome_completo}."
     adicionar_log(mensagem_log, tipo="remoção", usuario=current_user, tipo_usuario="admin")
 
     flash("Funcionário removido com sucesso!", "success")
