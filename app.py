@@ -1464,32 +1464,46 @@ def remover_interesse(id):
 def criar_instituicao():
     if request.method == 'POST':
         nome_instituicao = request.form['nome_instituicao']
+        email_instituicao = request.form['email_instituicao']  # Capturando o email corretamente
         nome_master = request.form['nome_master']
+        email_master = request.form['email_master']
         telefone_master = request.form['telefone_master']
         senha_padrao = "12345"
         senha_hash = generate_password_hash(senha_padrao)
 
-        # Cria a Instituição
-        instituicao = Instituicao(nome_instituicao=nome_instituicao)
-        db.session.add(instituicao)
-        db.session.commit()  # Confirma para obter o ID da instituição
+        try:
+            # Criar a instituição com todos os campos obrigatórios
+            instituicao = Instituicao(
+                nome_instituicao=nome_instituicao,
+                email=email_instituicao,  # Passando o email corretamente
+                status="ativo",  # Se necessário
+                created_at=datetime.utcnow(),
+                data_atualizacao=datetime.utcnow()
+            )
+            db.session.add(instituicao)
+            db.session.commit()  # Confirmando para obter o ID
 
-        # Cria o Funcionário Master
-        master = Funcionario(
-            nome_completo=nome_master,
-            senha=senha_hash,
-            telefone=telefone_master,
-            permissao='master',
-            instituicao_id=instituicao.id
-        )
-        db.session.add(master)
-        db.session.commit()
+            # Criar o Funcionário Master
+            master = Funcionario(
+                nome_completo=nome_master,
+                email=email_master,  # Email do funcionário master
+                senha=senha_hash,
+                telefone=telefone_master,
+                permissao='master',
+                instituicao_id=instituicao.id
+            )
+            db.session.add(master)
+            db.session.commit()
 
-        flash('Instituição e Master criados com sucesso!', 'success')
-        return redirect(url_for('painel_admin') + '#criar-instituicoes')
+            flash('Instituição e Master criados com sucesso!', 'success')
+            return redirect(url_for('painel_admin') + '#criar-instituicoes')
+
+        except Exception as e:
+            db.session.rollback()  # Se der erro, desfaz as alterações
+            flash(f"Erro ao criar instituição: {str(e)}", "danger")
+            return redirect(url_for('painel_admin') + '#criar-instituicoes')
 
     return redirect(url_for('painel_admin') + '#criar-instituicoes')
-
 
 @app.route('/criar_funcionario', methods=['POST'])
 @login_required
