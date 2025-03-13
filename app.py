@@ -1482,6 +1482,12 @@ def criar_instituicao():
             )
             db.session.add(instituicao)
             db.session.commit()  # Confirmando para obter o ID
+            adicionar_log(
+                mensagem=f"Instituição '{nome_instituicao}' criada com sucesso.",
+                tipo='informação',
+                usuario= current_user,
+                tipo_usuario='admin'
+            )
 
             # Criar o Funcionário Master
             master = Funcionario(
@@ -1494,12 +1500,24 @@ def criar_instituicao():
             )
             db.session.add(master)
             db.session.commit()
+            adicionar_log(
+                mensagem=f"Funcionário Master '{nome_master}' criado para a instituição '{nome_instituicao}'.",
+                tipo='informação',
+                usuario=current_user,
+                tipo_usuario='admin'
+            )
 
             flash('Instituição e Master criados com sucesso!', 'success')
             return redirect(url_for('painel_admin') + '#criar-instituicoes')
 
         except Exception as e:
             db.session.rollback()  # Se der erro, desfaz as alterações
+            adicionar_log(
+                mensagem=f"Erro ao criar instituição ou funcionário master: {str(e)}",
+                tipo='erro',
+                usuario=current_user,
+                tipo_usuario='admin'
+            )
             flash(f"Erro ao criar instituição: {str(e)}", "danger")
             return redirect(url_for('painel_admin') + '#criar-instituicoes')
 
