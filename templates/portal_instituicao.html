@@ -196,9 +196,10 @@
                                value="{{ request.args.get('media_min', '') }}">
                     </div>
                     <div class="col-md-3">
-                        <label for="idade_min" class="form-label">Idade Mínima:</label>
-                        <input type="number" name="idade_min" min="10" max="30" class="form-control"
-                               value="{{ request.args.get('idade_min', '') }}">
+                        <label for="idade_max" class="form-label">Idade Máxima:</label>
+                        <input type="number" name="idade_max" min="10" max="30" class="form-control"
+                               value="{{ request.args.get('idade_max', '') }}">
+
                     </div>
                     <div class="col-md-3">
                         <label for="status" class="form-label">Status:</label>

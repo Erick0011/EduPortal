@@ -1024,30 +1024,31 @@ def portal_instituicao():
 
         # Obtendo filtros da URL
         media_min = request.args.get('media_min', type=float)
-        idade_max = request.args.get('idade_max', type=int)  # Alterado para idade máxima
+        idade_max = request.args.get('idade_max', type=int)
         status_filtro = request.args.get('status')
 
-        # Criar um alias para a tabela Aluno
+        # Criar um alias para a tabela Aluno (evita conflito de JOINs)
         AlunoAlias = aliased(Aluno)
 
-        # Buscar apenas alunos com inscrições nesta instituição (apenas um JOIN)
+        # Buscar apenas alunos com inscrições nesta instituição
         inscricoes_query = Inscricao.query.join(AlunoAlias).filter(
             Inscricao.instituicao_id == current_user.instituicao_id
         )
 
-        # Aplicando filtros
-        if media_min:
+        # Aplicando filtros corretamente
+        if media_min is not None:
             inscricoes_query = inscricoes_query.filter(AlunoAlias.media_final >= media_min)
 
-        if idade_max:
+        if idade_max is not None:
             ano_atual = datetime.now().year
             inscricoes_query = inscricoes_query.filter(
-                (ano_atual - extract('year', AlunoAlias.data_nascimento)) <= idade_max  # Inverti o sinal
+                (ano_atual - extract('year', AlunoAlias.data_nascimento)) <= idade_max
             )
 
         if status_filtro and status_filtro != "Todos":
-            inscricoes_query = inscricoes_query.filter_by(status=status_filtro)
+            inscricoes_query = inscricoes_query.filter(Inscricao.status == status_filtro)
 
+        # Executando a consulta
         inscricoes = inscricoes_query.all()
 
         # Log de acesso bem-sucedido
@@ -1065,7 +1066,7 @@ def portal_instituicao():
             funcionarios=funcionarios,
             senha_padrao=senha_padrao,
             inscricoes=inscricoes,
-            ano_atual=datetime.now().year  # Passando o ano atual para o template
+            ano_atual=datetime.now().year
         )
 
     except Exception as e:
@@ -1078,7 +1079,7 @@ def portal_instituicao():
         )
 
         flash("Erro ao carregar o portal da instituição. Tente novamente.", "danger")
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('portal_instituicao'))
 
 @app.route('/atualizar_inscricao/<int:inscricao_id>', methods=['POST'])
 @login_required
