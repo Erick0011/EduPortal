@@ -66,11 +66,64 @@
         </div>
         {% endif %}
 
-        <div class="tab-pane fade" id="dashboard">
-            <h2 class="text-center">Portal da Instituição - {{ instituicao.nome_instituicao }}</h2>
-            <p>Visão geral da instituição.</p>
-            <a href="{{ url_for('download_lista_pdf') }}" class="btn btn-primary">Baixar PDF</a>
+       <div class="tab-pane fade" id="dashboard">
+            <h2 class="text-center mb-4">Portal da Instituição - {{ instituicao.nome_instituicao }}</h2>
+            <p class="text-center">Visão geral da instituição.</p>
+
+            <div class="row">
+                <!-- Inscrições Totais -->
+                <div class="col-md-3">
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-header bg-primary text-white text-center fw-bold">Total de Inscrições</div>
+                        <div class="card-body text-center">
+                            <h3 class="card-title">{{ total_inscricoes }}</h3>
+                            <p class="card-text">Total de alunos que se inscreveram.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alunos Aprovados -->
+                <div class="col-md-3">
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-header bg-success text-white text-center fw-bold">Alunos Aprovados</div>
+                        <div class="card-body text-center">
+                            <h3 class="card-title">{{ total_aprovados }}</h3>
+                            <p class="card-text">Alunos aceitos                     na instituição.                   </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inscrições Pendentes -->
+                <div class="col-md-3">
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-header bg-warning text-dark text-center fw-bold">Inscrições Pendentes</div>
+                        <div class="card-body text-center">
+                            <h3 class="card-title">{{ total_pendentes }}</h3>
+                            <p class="card-text">Inscrições aguardando decisão.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Funcionários -->
+                <div class="col-md-3">
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-header bg-info text-white text-center fw-bold">Funcionários</div>
+                        <div class="card-body text-center">
+                            <h3 class="card-title">{{ total_funcionarios }}</h3>
+                            <p class="card-text">Total de funcionários na instituição.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botão de Download -->
+            <div class="text-center mt-3">
+                <a href="{{ url_for('download_lista_pdf') }}" class="btn btn-primary btn-lg px-4 shadow">
+                    Baixar PDF
+                </a>
+            </div>
         </div>
+
         {% if user.permissao == 'master' %}
         <div class="tab-pane fade" id="instituicao">
             <div class="container mt-4">

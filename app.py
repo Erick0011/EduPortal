@@ -1024,42 +1024,17 @@ def portal_instituicao():
         funcionarios = Funcionario.query.filter_by(instituicao_id=current_user.instituicao_id).all()
         senha_padrao = check_password_hash(current_user.senha, "12345")
 
-        # Obtendo filtros da URL
-        media_min = request.args.get('media_min', type=float)
-        idade_max = request.args.get('idade_max', type=int)
-        status_filtro = request.args.get('status')
+        # Contagem de alunos inscritos na instituição
+        total_inscricoes = Inscricao.query.filter_by(instituicao_id=current_user.instituicao_id).count()
 
-        # Criar um alias para a tabela Aluno (evita conflito de JOINs)
-        AlunoAlias = aliased(Aluno)
+        # Contagem de alunos aprovados
+        total_aprovados = Inscricao.query.filter_by(instituicao_id=current_user.instituicao_id, status="Aceite").count()
 
-        # Buscar apenas alunos com inscrições nesta instituição
-        inscricoes_query = Inscricao.query.join(AlunoAlias).filter(
-            Inscricao.instituicao_id == current_user.instituicao_id
-        )
+        # Contagem de alunos pendentes
+        total_pendentes = Inscricao.query.filter_by(instituicao_id=current_user.instituicao_id, status="Pendente").count()
 
-        # Aplicando filtros corretamente
-        if media_min is not None:
-            inscricoes_query = inscricoes_query.filter(AlunoAlias.media_final >= media_min)
-
-        if idade_max is not None:
-            ano_atual = datetime.now().year
-            inscricoes_query = inscricoes_query.filter(
-                (ano_atual - extract('year', AlunoAlias.data_nascimento)) <= idade_max
-            )
-
-        if status_filtro and status_filtro != "Todos":
-            inscricoes_query = inscricoes_query.filter(Inscricao.status == status_filtro)
-
-        # Executando a consulta
-        inscricoes = inscricoes_query.all()
-
-        # Log de acesso bem-sucedido
-        adicionar_log(
-            mensagem=f"Funcionário {current_user.id} acessou o portal da instituição ID {current_user.instituicao_id}.",
-            tipo="informação",
-            usuario=current_user,
-            tipo_usuario="funcionario"
-        )
+        # Total de funcionários
+        total_funcionarios = len(funcionarios)
 
         return render_template(
             'portal_instituicao.html',
@@ -1067,12 +1042,13 @@ def portal_instituicao():
             instituicao=instituicao,
             funcionarios=funcionarios,
             senha_padrao=senha_padrao,
-            inscricoes=inscricoes,
-            ano_atual=datetime.now().year
+            total_inscricoes=total_inscricoes,
+            total_aprovados=total_aprovados,
+            total_pendentes=total_pendentes,
+            total_funcionarios=total_funcionarios,
         )
 
     except Exception as e:
-        # Log de erro
         adicionar_log(
             mensagem=f"Erro ao acessar portal da instituição ID {current_user.instituicao_id}: {str(e)}",
             tipo="erro",
