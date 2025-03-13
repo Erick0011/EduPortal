@@ -1108,7 +1108,7 @@ def atualizar_inscricao(inscricao_id):
 
         # Log de alteração
         adicionar_log(
-            mensagem=f"Inscrição {inscricao.id} alterada de '{status_anterior}' para '{inscricao.status}' por {current_user.nome}.",
+            mensagem=f"Inscrição {inscricao.id} alterada de '{status_anterior}' para '{inscricao.status}' por {current_user.nome_completo}.",
             tipo="informação",
             usuario=current_user,
             tipo_usuario="funcionario"
