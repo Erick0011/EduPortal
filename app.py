@@ -1557,7 +1557,7 @@ def criar_funcionario():
 
     db.session.add(novo_funcionario)
     db.session.commit()
-    mensagem_log = f"O funcionário '{nome_completo}' foi criado na instituição '{current_user.instituicao.nome_instituicao}' por {current_user.nome}."
+    mensagem_log = f"O funcionário '{nome_completo}' foi criado na instituição '{current_user.instituicao.nome_instituicao}' por {current_user.nome_completo}."
     adicionar_log(mensagem_log, tipo="criação", usuario=current_user, tipo_usuario="Funcionario-master")
     flash("Funcionário criado com sucesso!", "success")
     return redirect(url_for('portal_instituicao'))
