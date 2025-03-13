@@ -1344,7 +1344,7 @@ def editar_instituicao(instituicao_id):
             alteracoes.append(f"{campo}: '{valor_antigo}' → '{valor_novo}'")
 
     if alteracoes:
-        mensagem_log = f"Instituição '{instituicao.nome_instituicao}' editada por {current_user.nome}. Alterações: " + "; ".join(alteracoes)
+        mensagem_log = f"Instituição '{instituicao.nome_instituicao}' editada por {current_user.nome_completo}. Alterações: " + "; ".join(alteracoes)
         adicionar_log(mensagem_log, tipo="edição", usuario=current_user, tipo_usuario="admin")
 
     flash("Informações da instituição atualizadas com sucesso!", "success")
