@@ -782,9 +782,11 @@ def painel_admin():
     logs_sistema = Log.query.order_by(Log.data_hora.desc()).limit(30).all()
     alunos_recentes = Aluno.query.order_by(Aluno.created_at.desc()).limit(5).all()
     instituicoes = Instituicao.query.all()
-    total_alunos, total_instituicoes = db.session.query(
-        db.func.count(Aluno.id), db.func.count(Instituicao.id)
-    ).first()
+    # Contar o total de alunos
+    total_alunos = db.session.query(db.func.count(Aluno.id)).scalar()
+
+    # Contar o total de instituições
+    total_instituicoes = db.session.query(db.func.count(Instituicao.id)).scalar()
 
     # Processamento de interesses
     interesses = InteresseInstituicao.query.all()
