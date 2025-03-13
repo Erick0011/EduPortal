@@ -1,6 +1,7 @@
 from flask import Flask, session, render_template, redirect, request, url_for, flash, Response, send_from_directory, abort
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import aliased
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -1023,20 +1024,25 @@ def portal_instituicao():
 
         # Obtendo filtros da URL
         media_min = request.args.get('media_min', type=float)
-        idade_min = request.args.get('idade_min', type=int)
+        idade_max = request.args.get('idade_max', type=int)  # Alterado para idade máxima
         status_filtro = request.args.get('status')
 
-        # Buscar apenas alunos com inscrições nesta instituição
-        inscricoes_query = Inscricao.query.filter_by(instituicao_id=current_user.instituicao_id)
+        # Criar um alias para a tabela Aluno
+        AlunoAlias = aliased(Aluno)
+
+        # Buscar apenas alunos com inscrições nesta instituição (apenas um JOIN)
+        inscricoes_query = Inscricao.query.join(AlunoAlias).filter(
+            Inscricao.instituicao_id == current_user.instituicao_id
+        )
 
         # Aplicando filtros
         if media_min:
-            inscricoes_query = inscricoes_query.join(Aluno).filter(Aluno.media_final >= media_min)
+            inscricoes_query = inscricoes_query.filter(AlunoAlias.media_final >= media_min)
 
-        if idade_min:
+        if idade_max:
             ano_atual = datetime.now().year
-            inscricoes_query = inscricoes_query.join(Aluno).filter(
-                (ano_atual - extract('year', Aluno.data_nascimento)) >= idade_min
+            inscricoes_query = inscricoes_query.filter(
+                (ano_atual - extract('year', AlunoAlias.data_nascimento)) <= idade_max  # Inverti o sinal
             )
 
         if status_filtro and status_filtro != "Todos":
