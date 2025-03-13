@@ -330,7 +330,11 @@
                                     <button type="submit" class="btn btn-success">Salvar Alterações</button>
                                 </form>
 
-                                <a href="{{ url_for('deletar_aluno', aluno_id=aluno.id) }}" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja excluir este aluno?')">Excluir</a>
+                                <form action="{{ url_for('deletar_aluno', aluno_id=aluno.id) }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja excluir este aluno?')">
+                                        Excluir
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>

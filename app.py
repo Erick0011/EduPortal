@@ -528,7 +528,7 @@ def login():
                 f"Falha ao tentar login com email: {email}", tipo='erro', usuario=None, tipo_usuario='desconhecido'
             )
 
-            flash("Credenciais inválidas. Verifique o email e a senha.", "error")
+            flash("Credenciais inválidas. Verifique o email e a senha.", "danger")
 
     return render_template('login.html')
 
