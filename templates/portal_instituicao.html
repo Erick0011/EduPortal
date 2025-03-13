@@ -59,28 +59,6 @@
 
 <body>
     <!-- Sidebar fixa -->
-    <div class="sidebar d-flex flex-column">
-        <div class="brand">
-            <span class="edu">Edu</span><span class="portal">Portal</span>
-        </div>
-        <nav class="nav flex-column">
-            <a class="nav-link" href="#dashboard" data-bs-toggle="tab">Dashboard</a>
-            {% if user.permissao == 'master' %}
-            <a class="nav-link" href="#instituicao" data-bs-toggle="tab">Informações da Instituição</a>
-            {% endif %}
-            <a class="nav-link" href="#inscricoes" data-bs-toggle="tab">Gerir Inscrições</a>
-            {% if user.permissao == 'master' %}
-            <a class="nav-link" href="#funcionarios" data-bs-toggle="tab">Gerir Funcionários</a>
-            {% endif %}
-            <a class="nav-link" href="#suporte" data-bs-toggle="tab">Suporte</a>
-            <a class="nav-link" href="#perfil" data-bs-toggle="tab">Perfil</a>
-            <form action="/logout" method="POST" style="margin: 0;">
-                <button type="submit" class="nav-link btn btn-link text-start" style="color: red; text-decoration: none; padding: 15px;">Sair</button>
-            </form>
-        </nav>
-    </div>
-
-    <!-- Conteúdo com abas -->
     <div class="content tab-content">
         {% if senha_padrao %}
         <div class="alert alert-warning text-center">
@@ -215,19 +193,21 @@
                 <form method="GET" class="row g-3">
                     <div class="col-md-3">
                         <label for="media_min" class="form-label">Média Final Mínima:</label>
-                        <input type="number" name="media_min" step="0.1" min="0" max="20" class="form-control">
+                        <input type="number" name="media_min" step="0.1" min="0" max="20" class="form-control"
+                               value="{{ request.args.get('media_min', '') }}">
                     </div>
                     <div class="col-md-3">
                         <label for="idade_min" class="form-label">Idade Mínima:</label>
-                        <input type="number" name="idade_min" min="10" max="30" class="form-control">
+                        <input type="number" name="idade_min" min="10" max="30" class="form-control"
+                               value="{{ request.args.get('idade_min', '') }}">
                     </div>
                     <div class="col-md-3">
                         <label for="status" class="form-label">Status:</label>
                         <select name="status" class="form-select">
-                            <option value="Todos">Todos</option>
-                            <option value="Pendente">Pendente</option>
-                            <option value="Aceite">Aceite</option>
-                            <option value="Rejeitado">Rejeitado</option>
+                            <option value="Todos" {% if request.args.get('status') == 'Todos' %}selected{% endif %}>Todos</option>
+                            <option value="Pendente" {% if request.args.get('status') == 'Pendente' %}selected{% endif %}>Pendente</option>
+                            <option value="Aceite" {% if request.args.get('status') == 'Aceite' %}selected{% endif %}>Aceite</option>
+                            <option value="Rejeitado" {% if request.args.get('status') == 'Rejeitado' %}selected{% endif %}>Rejeitado</option>
                         </select>
                     </div>
                     <div class="col-md-3 align-self-end">
@@ -238,120 +218,124 @@
                 <!-- Tabela de Inscrições -->
                 <table class="table table-hover mt-4">
                     <thead class="table-dark">
-                        <tr>
-                            <th>Aluno</th>
-                            <th>Curso</th>
-                            <th>Média</th>
-                            <th>Idade</th>
-                            <th>Status</th>
-                            <th>Ação</th>
-                        </tr>
+                    <tr>
+                        <th>Aluno</th>
+                        <th>Curso</th>
+                        <th>Média</th>
+                        <th>Idade</th>
+                        <th>Status</th>
+                        <th>Ação</th>
+                    </tr>
                     </thead>
                     <tbody>
-                        {% for inscricao in inscricoes %}
-                        <tr>
-                            <td>
-                                <a href="#" data-bs-toggle="modal" data-bs-target="#modalAluno{{ inscricao.id }}">
-                                    {{ inscricao.aluno.nome_completo }}
-                                </a>
-                            </td>
-                            <td>{{ inscricao.curso }}</td>
-                            <td>{{ inscricao.aluno.media_final }}</td>
-                            <td>{{ ano_atual - inscricao.aluno.data_nascimento.year }} anos</td>
-                            <td>
-                                <span class="badge {% if inscricao.status == 'Pendente' %}bg-warning{% elif inscricao.status == 'Aceito' %}bg-success{% else %}bg-danger{% endif %}">
-                                    {{ inscricao.status }}
-                                </span>
-                            </td>
-                            <td>
-                                {% if inscricao.status == "Pendente" %}
-                                    <form method="POST" action="{{ url_for('atualizar_inscricao', inscricao_id=inscricao.id) }}" class="d-inline">
-                                        <input type="hidden" name="acao" value="aceitar">
-                                        <button type="submit" class="btn btn-success btn-sm">Aceitar</button>
-                                    </form>
-                                    <form method="POST" action="{{ url_for('atualizar_inscricao', inscricao_id=inscricao.id) }}" class="d-inline">
-                                        <input type="hidden" name="acao" value="rejeitar">
-                                        <button type="submit" class="btn btn-danger btn-sm">Rejeitar</button>
-                                    </form>
-                                {% endif %}
+                    {% set ano_atual = 2024 %}
+                    {% for inscricao in inscricoes %}
+                    <tr>
+                        <td>
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#modalAluno{{ inscricao.id }}">
+                                {{ inscricao.aluno.nome_completo }}
+                            </a>
+                        </td>
+                        <td>{{ inscricao.curso }}</td>
+                        <td>{{ inscricao.aluno.media_final }}</td>
+                        <td>{{ ano_atual - inscricao.aluno.data_nascimento.year }} anos</td>
+                        <td>
+                        <span class="badge
+                            {% if inscricao.status == 'Pendente' %}bg-warning
+                            {% elif inscricao.status == 'Aceite' %}bg-success
+                            {% else %}bg-danger{% endif %}">
+                            {{ inscricao.status }}
+                        </span>
+                        </td>
+                        <td>
+                            {% if inscricao.status == "Pendente" %}
+                            <form method="POST" action="{{ url_for('atualizar_inscricao', inscricao_id=inscricao.id) }}" class="d-inline">
+                                <input type="hidden" name="acao" value="aceitar">
+                                <button type="submit" class="btn btn-success btn-sm">Aceitar</button>
+                            </form>
+                            <form method="POST" action="{{ url_for('atualizar_inscricao', inscricao_id=inscricao.id) }}" class="d-inline">
+                                <input type="hidden" name="acao" value="rejeitar">
+                                <button type="submit" class="btn btn-danger btn-sm">Rejeitar</button>
+                            </form>
+                            {% endif %}
 
-                                <!-- Botão para enviar mensagem -->
-                                <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#modalMensagem{{ inscricao.id }}">
-                                    Enviar Mensagem
-                                </button>
-
-                            </td>
-                        </tr>
-                        {% endfor %}
+                            <!-- Botão para enviar mensagem -->
+                            <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#modalMensagem{{ inscricao.id }}">
+                                Enviar Mensagem
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
                     </tbody>
                 </table>
 
-                <!-- MOVEMOS OS MODAIS PARA FORA DA TABELA -->
+                <!-- MODAIS -->
                 {% for inscricao in inscricoes %}
-                    <!-- Modal com detalhes do aluno -->
-                    <div class="modal fade" id="modalAluno{{ inscricao.id }}" tabindex="-1" aria-labelledby="modalAlunoLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-lg">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Detalhes de {{ inscricao.aluno.nome_completo }}</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <!-- Modal com detalhes do aluno -->
+                <div class="modal fade" id="modalAluno{{ inscricao.id }}" tabindex="-1" aria-labelledby="modalAlunoLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Detalhes de {{ inscricao.aluno.nome_completo }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p><strong>Curso:</strong> {{ inscricao.curso }}</p>
+                                <p><strong>Média Final:</strong> {{ inscricao.aluno.media_final }}</p>
+                                <p><strong>Idade:</strong> {{ ano_atual - inscricao.aluno.data_nascimento.year }} anos</p>
+                                <p><strong>Telefone:</strong> {{ inscricao.aluno.telefone }}</p>
+                                <p><strong>Email:</strong> {{ inscricao.aluno.email }}</p>
+                                <p><strong>Endereço:</strong> {{ inscricao.aluno.bairro }}, {{ inscricao.aluno.municipio }}, {{ inscricao.aluno.provincia }}</p>
+
+                                <!-- Documentos -->
+                                <h5>Documentos</h5>
+                                <div class="d-flex flex-wrap">
+                                    {% if inscricao.aluno.frente_bilhete_path %}
+                                    <a href="{{ url_for('static', filename=inscricao.aluno.frente_bilhete_path) }}" target="_blank">
+                                        <img src="{{ url_for('static', filename=inscricao.aluno.frente_bilhete_path) }}" class="img-thumbnail me-2" style="max-width: 150px;">
+                                    </a>
+                                    {% endif %}
+                                    {% if inscricao.aluno.verso_bilhete_path %}
+                                    <a href="{{ url_for('static', filename=inscricao.aluno.verso_bilhete_path) }}" target="_blank">
+                                        <img src="{{ url_for('static', filename=inscricao.aluno.verso_bilhete_path) }}" class="img-thumbnail me-2" style="max-width: 150px;">
+                                    </a>
+                                    {% endif %}
+                                    {% if inscricao.aluno.certificado_path %}
+                                    <a href="{{ url_for('static', filename=inscricao.aluno.certificado_path) }}" target="_blank">
+                                        <img src="{{ url_for('static', filename=inscricao.aluno.certificado_path) }}" class="img-thumbnail me-2" style="max-width: 150px;">
+                                    </a>
+                                    {% endif %}
                                 </div>
-                                <div class="modal-body">
-                                    <p><strong>Curso:</strong> {{ inscricao.curso }}</p>
-                                    <p><strong>Média Final:</strong> {{ inscricao.aluno.media_final }}</p>
-                                    <p><strong>Idade:</strong> {{ 2024 - inscricao.aluno.data_nascimento.year }} anos</p>
-                                    <p><strong>Telefone:</strong> {{ inscricao.aluno.telefone }}</p>
-                                    <p><strong>Email:</strong> {{ inscricao.aluno.email }}</p>
-                                    <p><strong>Endereço:</strong> {{ inscricao.aluno.bairro }}, {{ inscricao.aluno.municipio }}, {{ inscricao.aluno.provincia }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                                    <!-- Documentos -->
-                                    <h5>Documentos</h5>
-                                    <div class="d-flex flex-wrap">
-                                        {% if inscricao.aluno.frente_bilhete_path %}
-                                            <a href="{{ url_for('static', filename=inscricao.aluno.frente_bilhete_path) }}" target="_blank">
-                                                <img src="{{ url_for('static', filename=inscricao.aluno.frente_bilhete_path) }}" class="img-thumbnail me-2" style="max-width: 150px;">
-                                            </a>
-                                        {% endif %}
-
-                                        {% if inscricao.aluno.verso_bilhete_path %}
-                                            <a href="{{ url_for('static', filename=inscricao.aluno.verso_bilhete_path) }}" target="_blank">
-                                                <img src="{{ url_for('static', filename=inscricao.aluno.verso_bilhete_path) }}" class="img-thumbnail me-2" style="max-width: 150px;">
-                                            </a>
-                                        {% endif %}
-
-                                        {% if inscricao.aluno.certificado_path %}
-                                            <a href="{{ url_for('static', filename=inscricao.aluno.certificado_path) }}" target="_blank">
-                                                <img src="{{ url_for('static', filename=inscricao.aluno.certificado_path) }}" class="img-thumbnail me-2" style="max-width: 150px;">
-                                            </a>
-                                        {% endif %}
+                <!-- Modal de Mensagem -->
+                <div class="modal fade" id="modalMensagem{{ inscricao.id }}" tabindex="-1" aria-labelledby="modalMensagemLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Enviar Mensagem para {{ inscricao.aluno.nome_completo }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="POST" action="{{ url_for('atualizar_inscricao', inscricao_id=inscricao.id) }}">
+                                    <input type="hidden" name="acao" value="mensagem">
+                                    <div class="mb-3">
+                                        <label for="mensagem" class="form-label">Mensagem:</label>
+                                        <textarea name="mensagem" class="form-control" rows="4" required></textarea>
                                     </div>
-                                </div>
+                                    <button type="submit" class="btn btn-primary">Enviar</button>
+                                </form>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Modal de Mensagem -->
-                    <div class="modal fade" id="modalMensagem{{ inscricao.id }}" tabindex="-1" aria-labelledby="modalMensagemLabel" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Enviar Mensagem para {{ inscricao.aluno.nome_completo }}</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <form method="POST" action="{{ url_for('atualizar_inscricao', inscricao_id=inscricao.id) }}">
-                                        <input type="hidden" name="acao" value="mensagem">
-                                        <div class="mb-3">
-                                            <label for="mensagem" class="form-label">Mensagem:</label>
-                                            <textarea name="mensagem" class="form-control" rows="4" required></textarea>
-                                        </div>
-                                        <button type="submit" class="btn btn-primary">Enviar</button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                </div>
                 {% endfor %}
+            </div> <!-- Fecha container -->
+        </div> <!-- Fecha tab-pane -->
+
         {% if user.permissao == 'master' %}
         <div class="tab-pane fade" id="funcionarios">
             <div class="container mt-4">
@@ -408,35 +392,35 @@
                     <div class="card-body">
                         <table class="table table-striped table-hover">
                             <thead class="table-dark">
-                                <tr>
-                                    <th>Nome</th>
-                                    <th>Email</th>
-                                    <th>Telefone</th>
-                                    <th>Permissão</th>
-                                    {% if user.permissao == 'master' %}
-                                    <th>Ações</th>
-                                    {% endif %}
-                                </tr>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>Telefone</th>
+                                <th>Permissão</th>
+                                {% if user.permissao == 'master' %}
+                                <th>Ações</th>
+                                {% endif %}
+                            </tr>
                             </thead>
                             <tbody>
-                                {% for funcionario in funcionarios %}
-                                <tr>
-                                    <td>{{ funcionario.nome_completo }}</td>
-                                    <td>{{ funcionario.email }}</td>
-                                    <td>{{ funcionario.telefone }}</td>
-                                    <td>{{ funcionario.permissao }}</td>
-                                    {% if user.permissao == 'master' %}
-                                    <td>
-                                        <form method="POST" action="{{ url_for('remover_funcionario', funcionario_id=funcionario.id) }}">
-                                            <button type="submit" class="btn btn-danger btn-sm"
+                            {% for funcionario in funcionarios %}
+                            <tr>
+                                <td>{{ funcionario.nome_completo }}</td>
+                                <td>{{ funcionario.email }}</td>
+                                <td>{{ funcionario.telefone }}</td>
+                                <td>{{ funcionario.permissao }}</td>
+                                {% if user.permissao == 'master' %}
+                                <td>
+                                    <form method="POST" action="{{ url_for('remover_funcionario', funcionario_id=funcionario.id) }}">
+                                        <button type="submit" class="btn btn-danger btn-sm"
                                                 onclick="return confirm('Tem certeza que deseja remover este funcionário?')">
-                                                Remover
-                                            </button>
-                                        </form>
-                                    </td>
-                                    {% endif %}
-                                </tr>
-                                {% endfor %}
+                                            Remover
+                                        </button>
+                                    </form>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
                             </tbody>
                         </table>
                     </div>
@@ -447,32 +431,32 @@
         {% endif %}
         <div class="tab-pane fade" id="suporte">
             <div class="d-flex justify-content-center">
-                        <div class="card p-4 shadow-lg border-0" style="width: 100%; max-width: 450px; border-radius: 12px;">
+                <div class="card p-4 shadow-lg border-0" style="width: 100%; max-width: 450px; border-radius: 12px;">
 
-                            <!-- Título -->
-                            <h3 class="text-center mb-3" style="color: #004A8D; font-weight: bold;">
-                                Precisa de Ajuda?
-                            </h3>
+                    <!-- Título -->
+                    <h3 class="text-center mb-3" style="color: #004A8D; font-weight: bold;">
+                        Precisa de Ajuda?
+                    </h3>
 
-                            <!-- Texto Explicativo -->
-                            <p class="text-center text-muted">
-                                Se estiver enfrentando algum problema, descreva abaixo e nossa equipe entrará em contato o mais breve possível.
-                            </p>
+                    <!-- Texto Explicativo -->
+                    <p class="text-center text-muted">
+                        Se estiver enfrentando algum problema, descreva abaixo e nossa equipe entrará em contato o mais breve possível.
+                    </p>
 
-                            <!-- Formulário -->
-                            <form action="{{ url_for('enviar_mensagem') }}" method="POST">
-                                <input type="hidden" name="tipo" value="suporte">
+                    <!-- Formulário -->
+                    <form action="{{ url_for('enviar_mensagem') }}" method="POST">
+                        <input type="hidden" name="tipo" value="suporte">
 
-                                <div class="mb-3">
-                                    <label for="mensagem" class="form-label fw-bold">Descreva seu problema:</label>
-                                    <textarea class="form-control" name="mensagem" rows="4" required
-                                              placeholder="Explique seu problema com o máximo de detalhes possível..."></textarea>
-                                </div>
-
-                                <button type="submit" class="btn btn-primary w-100">Enviar Pedido de Suporte</button>
-                            </form>
+                        <div class="mb-3">
+                            <label for="mensagem" class="form-label fw-bold">Descreva seu problema:</label>
+                            <textarea class="form-control" name="mensagem" rows="4" required
+                                      placeholder="Explique seu problema com o máximo de detalhes possível..."></textarea>
                         </div>
-                    </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Enviar Pedido de Suporte</button>
+                    </form>
+                </div>
+            </div>
         </div>
         <div class="tab-pane fade" id="perfil">
             <h1>Perfil</h1>
@@ -518,6 +502,28 @@
 
     </div>
 
+    <!-- Conteúdo com abas -->
+    <div class="sidebar d-flex flex-column">
+        <div class="brand">
+            <span class="edu">Edu</span><span class="portal">Portal</span>
+        </div>
+        <nav class="nav flex-column">
+            <a class="nav-link" href="#dashboard" data-bs-toggle="tab">Dashboard</a>
+            {% if user.permissao == 'master' %}
+            <a class="nav-link" href="#instituicao" data-bs-toggle="tab">Informações da Instituição</a>
+            {% endif %}
+            <a class="nav-link" href="#inscricoes" data-bs-toggle="tab">Gerir Inscrições</a>
+            {% if user.permissao == 'master' %}
+            <a class="nav-link" href="#funcionarios" data-bs-toggle="tab">Gerir Funcionários</a>
+            {% endif %}
+            <a class="nav-link" href="#suporte" data-bs-toggle="tab">Suporte</a>
+            <a class="nav-link" href="#perfil" data-bs-toggle="tab">Perfil</a>
+            <form action="/logout" method="POST" style="margin: 0;">
+                <button type="submit" class="nav-link btn btn-link text-start" style="color: red; text-decoration: none; padding: 15px;">Sair</button>
+            </form>
+        </nav>
+    </div>
+
 
     <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
     <script>
@@ -539,7 +545,7 @@
             if (hash) {
                 let targetTab = document.querySelector(hash);
                 let targetNav = document.querySelector(`.nav-link[href="${hash}"]`);
-                
+
                 if (targetTab && targetNav) {
                     document.querySelectorAll(".tab-pane").forEach(tab => tab.classList.remove("show", "active"));
                     document.querySelectorAll(".nav-link").forEach(nav => nav.classList.remove("active"));
