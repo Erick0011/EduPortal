@@ -8,9 +8,9 @@ from werkzeug.utils import secure_filename
 from werkzeug.exceptions import BadRequest
 from sqlalchemy.sql.expression import extract
 from faker import Faker
-from fpdf import FPDF
 from datetime import datetime
 from functools import wraps
+from fpdf import FPDF
 import os
 
 
@@ -35,8 +35,6 @@ db = SQLAlchemy(app)
 faker = Faker('pt_PT')
 
 # Função para verificar se a extensão do arquivo é permitida
-
-
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
@@ -72,8 +70,6 @@ class Aluno(UserMixin, db.Model):
 
 
 #  Instituicao
-
-
 class Instituicao(UserMixin, db.Model):
     __tablename__ = 'instituicao'
     id = db.Column(db.Integer, primary_key=True)
@@ -126,8 +122,6 @@ class Funcionario(UserMixin, db.Model):
 
 
 # Admin
-
-
 class Admin(UserMixin, db.Model):
     __tablename__ = 'admin'
     id = db.Column(db.Integer, primary_key=True)
@@ -138,8 +132,6 @@ class Admin(UserMixin, db.Model):
 
 
 # logs do sitema
-
-
 class Log(db.Model):
     __tablename__ = 'logs'
     id = db.Column(db.Integer, primary_key=True)
@@ -147,24 +139,19 @@ class Log(db.Model):
     mensagem = db.Column(db.String(255), nullable=False)
     # 'informação', 'erro', etc.
     tipo = db.Column(db.String(50), nullable=False)
-
-    # Campos que armazenam o tipo de usuário e o ID do usuário
-    # Pode ser aluno, instituição ou admin
     usuario_id = db.Column(db.Integer, nullable=True)
-    # 'aluno', 'instituicao', 'admin'
+    # 'aluno', 'funcionario', 'admin'
     tipo_usuario = db.Column(db.String(50), nullable=False)
 
     def __repr__(self):
         return f'<Log {self.id} - {self.tipo} - {self.tipo_usuario} - {self.usuario_id}>'
 
 # funcao add log
-
-
 def adicionar_log(mensagem, tipo='informação', usuario=None, tipo_usuario='desconecido'):
     novo_log = Log(mensagem=mensagem, tipo=tipo, tipo_usuario=tipo_usuario)
 
     if usuario:
-        novo_log.usuario_id = usuario.id  # Aqui você associa o log ao usuário
+        novo_log.usuario_id = usuario.id
 
     db.session.add(novo_log)
     db.session.commit()
@@ -241,8 +228,6 @@ def load_user(user_id):
     return None
 
 # Decorador para Administradores
-
-
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -571,9 +556,7 @@ def portal_estudante():
     )
 
 
-from flask import Response, abort, flash
-from fpdf import FPDF
-from datetime import datetime
+
 
 
 @app.route('/download_certificado/<int:inscricao_id>')
