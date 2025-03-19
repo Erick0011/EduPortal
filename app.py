@@ -1043,13 +1043,7 @@ def portal_instituicao():
         total_rejeitados = inscricoes_query.filter(Inscricao.status == 'Rejeitado').count()
 
 
-        # Log de acesso bem-sucedido
-        adicionar_log(
-            mensagem=f"Funcionário {current_user.id} acessou o portal da instituição ID {current_user.instituicao_id}.",
-            tipo="informação",
-            usuario=current_user.id,
-            tipo_usuario="funcionario"
-        )
+
 
         return render_template(
             'portal_instituicao.html',
