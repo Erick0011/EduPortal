@@ -1072,6 +1072,7 @@ def portal_instituicao():
         flash("Erro ao carregar o portal da instituição. Tente novamente.", "danger")
         return redirect(url_for('portal_instituicao'))
 
+
 @app.route('/atualizar_inscricao/<int:inscricao_id>', methods=['POST'])
 @login_required
 @funcionario_required
@@ -1090,10 +1091,26 @@ def atualizar_inscricao(inscricao_id):
         flash("Ação inválida.", "danger")
         return redirect(url_for('portal_instituicao'))
 
+    # Obtém a instituição e verifica o número de vagas
+    instituicao = Instituicao.query.get(inscricao.instituicao_id)
+
+    if instituicao.numero_vagas is None:
+        flash("Por favor, defina um número inicial de vagas antes de aceitar inscrições.", "warning")
+        return redirect(url_for('portal_instituicao'))
+
+    if acao == "aceitar":
+        # Bloqueia aceitação se todas as vagas já foram preenchidas
+        if instituicao.numero_vagas <= 0:
+            flash("Não é possível aceitar a inscrição, pois todas as vagas já foram preenchidas.", "danger")
+            return redirect(url_for('portal_instituicao'))
+
     try:
-        # Atualiza status da inscrição
         status_anterior = inscricao.status
-        inscricao.status = "Aceite" if acao == "aceitar" else "Rejeitado"
+        if acao == "aceitar":
+            inscricao.status = "Aceite"
+            instituicao.numero_vagas -= 1  # Reduz o número de vagas disponíveis
+        else:
+            inscricao.status = "Rejeitado"
 
         # Salva a mensagem se houver
         if mensagem:
@@ -1109,21 +1126,19 @@ def atualizar_inscricao(inscricao_id):
             tipo_usuario="funcionario"
         )
 
-        # Flash único consolidado
-        flash(f"Inscrição {inscricao.status.lower()} com sucesso!{ ' Mensagem enviada.' if mensagem else '' }", "success")
+        flash(f"Inscrição {inscricao.status.lower()} com sucesso!{' Mensagem enviada.' if mensagem else ''}", "success")
 
     except Exception as e:
         db.session.rollback()
         adicionar_log(
             mensagem=f"Erro ao atualizar inscrição {inscricao.id}: {str(e)}",
             tipo="erro",
-            usuario=current_user,
+            usuario=current_user.id,
             tipo_usuario="funcionario"
         )
         flash("Erro ao atualizar inscrição. Tente novamente.", "danger")
 
     return redirect(url_for('portal_instituicao'))
-
 
 
 @app.route('/download_lista_pdf')
