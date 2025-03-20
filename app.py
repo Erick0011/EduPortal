@@ -1146,32 +1146,34 @@ def atualizar_inscricao(inscricao_id):
 @funcionario_required
 def download_lista_pdf():
     try:
+        # Buscar inscrições aceitas
         inscricoes = Inscricao.query.filter_by(status="Aceite", instituicao_id=current_user.instituicao_id).all()
 
         # Nome da instituição e data do download
         instituicao_nome = current_user.instituicao.nome_instituicao
         data_download = datetime.now().strftime("%d/%m/%Y %H:%M")
 
-        pdf = FPDF()
+        pdf = FPDF(orientation="L", unit="mm", format="A4")  # Modo paisagem
         pdf.set_auto_page_break(auto=True, margin=15)
         pdf.add_page()
 
         # **Cabeçalho**
         pdf.set_font("Arial", "B", 16)
-        pdf.cell(190, 10, instituicao_nome, ln=True, align="C")
+        pdf.cell(275, 10, instituicao_nome, ln=True, align="C")
         pdf.set_font("Arial", "I", 12)
-        pdf.cell(190, 10, f"Data do Download: {data_download}", ln=True, align="C")
+        pdf.cell(275, 10, f"Data do Download: {data_download}", ln=True, align="C")
         pdf.ln(10)
 
         # **Título da lista**
         pdf.set_font("Arial", "B", 14)
-        pdf.cell(190, 10, "Lista de Inscrições Aceitas", ln=True, align="C")
+        pdf.cell(275, 10, "Lista de Inscrições Aceitas", ln=True, align="C")
         pdf.ln(10)
 
         # **Tabela**
         pdf.set_font("Arial", "B", 12)
 
-        column_widths = [20, 60, 35, 35, 40]
+        # Ajustando larguras das colunas sem a coluna "Status"
+        column_widths = [20, 80, 40, 50, 85]  # Expandindo "Curso" para ocupar o espaço do "Status"
         headers = ["ID", "Nome", "Telefone", "BI", "Curso"]
 
         pdf.set_fill_color(200, 200, 200)  # Cinza claro para cabeçalho
@@ -1187,10 +1189,10 @@ def download_lista_pdf():
         for inscricao in inscricoes:
             pdf.set_x(10)
             pdf.cell(column_widths[0], 10, str(inscricao.id), 1, 0, "C", fill=fill)
-            pdf.cell(column_widths[1], 10, inscricao.aluno.nome_completo[:25], 1, 0, "C", fill=fill)  # Truncar nome
+            pdf.cell(column_widths[1], 10, inscricao.aluno.nome_completo[:30], 1, 0, "C", fill=fill)
             pdf.cell(column_widths[2], 10, inscricao.aluno.telefone, 1, 0, "C", fill=fill)
             pdf.cell(column_widths[3], 10, inscricao.aluno.numero_bilhete, 1, 0, "C", fill=fill)
-            pdf.cell(column_widths[4], 10, inscricao.curso[:20], 1, 0, "C", fill=fill)  # Truncar curso
+            pdf.cell(column_widths[4], 10, inscricao.curso[:40], 1, 0, "C", fill=fill)  # Curso agora ocupa mais espaço
             pdf.ln()
             fill = not fill  # Alternar cor de fundo
 
@@ -1199,15 +1201,16 @@ def download_lista_pdf():
         pdf.set_font("Arial", "B", 14)
 
         pdf.set_text_color(0, 0, 255)  # Azul
-        pdf.cell(95, 10, "Edu", ln=False, align="R")
+        pdf.cell(135, 10, "Edu", ln=False, align="R")
 
         pdf.set_text_color(255, 165, 0)  # Laranja
         pdf.cell(0, 10, "Portal", ln=True, align="L")
 
         pdf.set_text_color(0, 0, 0)  # Resetando para preto
         pdf.set_font("Arial", "I", 10)
-        pdf.cell(190, 10, "Conectando Estudantes ao Futuro!", ln=True, align="C")
+        pdf.cell(275, 10, "Conectando Estudantes ao Futuro!", ln=True, align="C")
 
+        # Retornar PDF como resposta
         response = Response(pdf.output(dest="S").encode("latin1"))
         response.headers["Content-Type"] = "application/pdf"
         response.headers["Content-Disposition"] = "attachment; filename=lista_aprovados.pdf"
