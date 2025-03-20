@@ -1738,12 +1738,9 @@ def logout():
     # Realizar o logout
     logout_user()
 
-    # Exibir uma mensagem flash e redirecionar para a página de login
 
-    flash({
-        'titulo': 'Aviso',
-        'corpo': 'Você saiu da sua conta.'
-    })
+
+    flash('Você saiu da sua conta.', 'warning')
 
     return redirect(url_for('login'))
 
