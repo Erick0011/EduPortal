@@ -1082,27 +1082,27 @@ def atualizar_inscricao(inscricao_id):
     # Verifica se a inscrição pertence à instituição do usuário logado
     if inscricao.instituicao_id != current_user.instituicao_id:
         flash("Você não tem permissão para modificar esta inscrição.", "danger")
-        return redirect(url_for('portal_instituicao') )
+        return redirect(url_for('portal_instituicao') + '#inscricoes')
 
     acao = request.form.get('acao')
     mensagem = request.form.get('mensagem')  # Captura a mensagem do formulário
 
     if acao not in ["aceitar", "rejeitar"]:
         flash("Ação inválida.", "danger")
-        return redirect(url_for('portal_instituicao'))
+        return redirect(url_for('portal_instituicao') + '#inscricoes')
 
     # Obtém a instituição e verifica o número de vagas
     instituicao = Instituicao.query.get(inscricao.instituicao_id)
 
     if instituicao.numero_vagas is None:
         flash("Por favor, defina um número inicial de vagas antes de aceitar inscrições.", "warning")
-        return redirect(url_for('portal_instituicao'))
+        return redirect(url_for('portal_instituicao') + '#inscricoes')
 
     if acao == "aceitar":
         # Bloqueia aceitação se todas as vagas já foram preenchidas
         if instituicao.numero_vagas <= 0:
             flash("Não é possível aceitar a inscrição, pois todas as vagas já foram preenchidas.", "danger")
-            return redirect(url_for('portal_instituicao'))
+            return redirect(url_for('portal_instituicao') + '#inscricoes')
 
     try:
         status_anterior = inscricao.status
@@ -1138,7 +1138,7 @@ def atualizar_inscricao(inscricao_id):
         )
         flash("Erro ao atualizar inscrição. Tente novamente.", "danger")
 
-    return redirect(url_for('portal_instituicao'))
+    return redirect(url_for('portal_instituicao') + '#inscricoes')
 
 
 @app.route('/download_lista_pdf')
