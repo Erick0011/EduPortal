@@ -1082,7 +1082,7 @@ def atualizar_inscricao(inscricao_id):
     # Verifica se a inscrição pertence à instituição do usuário logado
     if inscricao.instituicao_id != current_user.instituicao_id:
         flash("Você não tem permissão para modificar esta inscrição.", "danger")
-        return redirect(url_for('portal_instituicao'))
+        return redirect(url_for('portal_instituicao') )
 
     acao = request.form.get('acao')
     mensagem = request.form.get('mensagem')  # Captura a mensagem do formulário
@@ -1358,7 +1358,7 @@ def editar_instituicao(instituicao_id):
         adicionar_log(mensagem_log, tipo="edição", usuario=current_user, tipo_usuario="admin")
 
     flash("Informações da instituição atualizadas com sucesso!", "success")
-    return redirect(url_for('portal_instituicao'))
+    return redirect(url_for('portal_instituicao') + '#instituicao')
 
 @app.route('/instituicoes')
 def instituicoes():
