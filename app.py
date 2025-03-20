@@ -1036,7 +1036,7 @@ def portal_instituicao():
         inscricoes = inscricoes_query.all()
 
         # Estatísticas do dashboard
-        total_inscritos = inscricoes_query.count()
+        total_inscritos = instituicao.numero_vagas_query.count()
         total_funcionarios = len(funcionarios)
         total_aprovados = inscricoes_query.filter(Inscricao.status == 'Aceite').count()
         total_pendentes = inscricoes_query.filter(Inscricao.status == 'Pendente').count()
