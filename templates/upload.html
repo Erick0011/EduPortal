@@ -45,32 +45,7 @@
             </div> 
         </div>
     </div>
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                var myModal = new bootstrap.Modal(document.getElementById('documentoModal'));
-                myModal.show();
-            });
-        </script>
-
-        <!-- Modal de Bootstrap -->
-        <div class="modal fade" id="documentoModal" tabindex="-1" aria-labelledby="documentoModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="documentoModalLabel">{{ messages[0]['titulo'] }}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>{{ messages[0]['corpo'] }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    {% endif %}
-{% endwith %}
-
+    {% include "modal.html" %}
              
         
 
