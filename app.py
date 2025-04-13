@@ -18,7 +18,7 @@ import os
 app = Flask(__name__)
 app.secret_key = 'uma_chave_secreta_e_unica_aqui'
 # Usando SQLite
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///edu_portal.db'
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg'}
 # Inicializando Flask-Login
@@ -113,7 +113,7 @@ class Funcionario(UserMixin, db.Model):
     created_at = db.Column(
         db.DateTime, default=datetime.utcnow, nullable=False)
 
-    # Chave estrangeira para o relacionamento com a Instituicao
+
     instituicao_id = db.Column(db.Integer, db.ForeignKey(
         'instituicao.id'), nullable=False)
 
@@ -1696,7 +1696,7 @@ def debug():
 def debug_action(action_id):
     # Obtém o nome da ação baseado no ID
     action_name = debug_buttons[action_id - 1]
-    flash({'titulo': 'debug', 'corpo': f"Ação {action_name} executada com sucesso!"})
+    flash(f"debug: Ação {action_name} executada com sucesso!", "success")
 
     # Aqui você pode adicionar a lógica específica para cada ação
     if action_id == 1:
@@ -1705,7 +1705,7 @@ def debug_action(action_id):
             nome_completo="Administrador",
             email="admin@escola.com",
             senha=generate_password_hash(
-                "12345")  # Senha segura com hash
+                "12345")
         )
         db.session.add(novo_admin)
         db.session.commit()
@@ -1726,7 +1726,7 @@ def debug_action(action_id):
         criar_instituicao_aleatoria()
         pass
 
-    # Redireciona de volta para o painel de debug
+
     return redirect(url_for('debug'))
 
 
@@ -1734,9 +1734,9 @@ def debug_action(action_id):
 @login_required
 def logout():
     # Registrar o log de logout
-    # mensagem = f'O usuário {current_user.nome_completo} fez logout'
-    # adicionar_log(mensagem=mensagem, tipo='informação',
-    #              usuario=current_user, tipo_usuario='aluno')
+    mensagem = f'O usuário {current_user.nome_completo} fez logout'
+    adicionar_log(mensagem=mensagem, tipo='informação',
+                  usuario=current_user, tipo_usuario='aluno')
 
     # Realizar o logout
     logout_user()
