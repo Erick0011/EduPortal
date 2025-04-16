@@ -1087,6 +1087,39 @@ def atualizar_inscricao(inscricao_id):
     acao = request.form.get('acao')
     mensagem = request.form.get('mensagem')  # Captura a mensagem do formulário
 
+    # Caso especial para envio apenas de mensagem
+    if acao == "mensagem":
+        if not mensagem:
+            flash("Por favor, escreva uma mensagem.", "warning")
+            return redirect(url_for('portal_instituicao') + '#inscricoes')
+
+        try:
+            inscricao.mensagem_instituicao = mensagem
+            db.session.commit()
+
+            # Log de alteração
+            adicionar_log(
+                mensagem=f"Mensagem enviada para inscrição {inscricao.id} por {current_user.nome_completo}",
+                tipo="informação",
+                usuario=current_user,
+                tipo_usuario="funcionario"
+            )
+
+            flash("Mensagem enviada com sucesso!", "success")
+            return redirect(url_for('portal_instituicao') + '#inscricoes')
+
+        except Exception as e:
+            db.session.rollback()
+            adicionar_log(
+                mensagem=f"Erro ao enviar mensagem para inscrição {inscricao.id}: {str(e)}",
+                tipo="erro",
+                usuario=current_user.id,
+                tipo_usuario="funcionario"
+            )
+            flash("Erro ao enviar mensagem. Tente novamente.", "danger")
+            return redirect(url_for('portal_instituicao') + '#inscricoes')
+
+    # Valida ações de aceitar/rejeitar
     if acao not in ["aceitar", "rejeitar"]:
         flash("Ação inválida.", "danger")
         return redirect(url_for('portal_instituicao') + '#inscricoes')

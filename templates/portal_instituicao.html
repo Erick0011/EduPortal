@@ -59,6 +59,7 @@
 
 <body>
     <!-- Sidebar fixa -->
+    {% include "modal.html" %}
     <div class="content tab-content">
         {% if senha_padrao %}
         <div class="alert alert-warning text-center">
@@ -365,23 +366,30 @@
                 </div>
 
                 <!-- Modal de Mensagem -->
+                <!-- Modal de Mensagem -->
                 <div class="modal fade" id="modalMensagem{{ inscricao.id }}" tabindex="-1" aria-labelledby="modalMensagemLabel" aria-hidden="true">
-                    <div class="modal-dialog">
+                    <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Enviar Mensagem para {{ inscricao.aluno.nome_completo }}</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <form method="POST" action="{{ url_for('atualizar_inscricao', inscricao_id=inscricao.id) }}">
+                            <form method="POST" action="{{ url_for('atualizar_inscricao', inscricao_id=inscricao.id) }}">
+                                <div class="modal-header bg-primary text-white">
+                                    <h5 class="modal-title">Enviar Mensagem para {{ inscricao.aluno.nome_completo }}</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
                                     <input type="hidden" name="acao" value="mensagem">
                                     <div class="mb-3">
-                                        <label for="mensagem" class="form-label">Mensagem:</label>
-                                        <textarea name="mensagem" class="form-control" rows="4" required></textarea>
+                                        <label for="mensagem{{ inscricao.id }}" class="form-label fw-bold">Mensagem:</label>
+                                        <textarea name="mensagem" id="mensagem{{ inscricao.id }}" class="form-control" rows="6" required
+                                                  placeholder="Digite sua mensagem aqui..."></textarea>
                                     </div>
-                                    <button type="submit" class="btn btn-primary">Enviar</button>
-                                </form>
-                            </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-send-fill me-2"></i> Enviar Mensagem
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
