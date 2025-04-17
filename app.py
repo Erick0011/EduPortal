@@ -1065,7 +1065,7 @@ def portal_instituicao():
         adicionar_log(
             mensagem=f"Erro ao acessar portal da instituição ID {current_user.instituicao_id}: {str(e)}",
             tipo="erro",
-            usuario=current_user.id,
+            usuario=current_user,
             tipo_usuario="funcionario"
         )
 
