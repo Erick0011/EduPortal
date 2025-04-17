@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel dos Funcionários</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='icons/bootstrap-icons.css') }}">
+
+
     <style>
         body {
             display: flex;
@@ -53,6 +56,52 @@
 
         .brand .portal {
             color: #ffa500;
+        }
+        /* Estilo para os modais */
+        .modal-content {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .document-thumbnail {
+            width: 150px;
+            transition: transform 0.2s;
+        }
+
+        .document-thumbnail:hover {
+            transform: scale(1.05);
+        }
+
+        .document-thumbnail .card {
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #dee2e6;
+        }
+
+        /* Melhora a aparência dos botões na tabela */
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        /* Efeito visual para quando o modal está aberto */
+        .modal {
+            transition: all 0.3s ease;
+        }
+
+        /* Melhora a aparência do textarea */
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        /* Estilo para o botão de fechar */
+        .btn-close {
+            transition: transform 0.2s;
+        }
+
+        .btn-close:hover {
+            transform: rotate(90deg);
         }
     </style>
 </head>
@@ -286,7 +335,7 @@
                     {% for inscricao in inscricoes %}
                     <tr>
                         <td>
-                            <a href="#" data-bs-toggle="modal" data-bs-target="#modalAluno{{ inscricao.id }}">
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#modalAluno{{ inscricao.id }}" class="text-primary">
                                 {{ inscricao.aluno.nome_completo }}
                             </a>
                         </td>
@@ -315,7 +364,7 @@
 
                             <!-- Botão para enviar mensagem -->
                             <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#modalMensagem{{ inscricao.id }}">
-                                Enviar Mensagem
+                                <i class="bi bi-envelope me-1"></i> Enviar Mensagem
                             </button>
                         </td>
                     </tr>
@@ -326,68 +375,126 @@
                 <!-- MODAIS -->
                 {% for inscricao in inscricoes %}
                 <!-- Modal com detalhes do aluno -->
-                <div class="modal fade" id="modalAluno{{ inscricao.id }}" tabindex="-1" aria-labelledby="modalAlunoLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
+                <div class="modal fade" id="modalAluno{{ inscricao.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
                         <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Detalhes de {{ inscricao.aluno.nome_completo }}</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-person-circle me-2"></i>
+                                    {{ inscricao.aluno.nome_completo }}
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <p><strong>Curso:</strong> {{ inscricao.curso }}</p>
-                                <p><strong>Média Final:</strong> {{ inscricao.aluno.media_final }}</p>
-                                <p><strong>Idade:</strong> {{ ano_atual - inscricao.aluno.data_nascimento.year }} anos</p>
-                                <p><strong>Telefone:</strong> {{ inscricao.aluno.telefone }}</p>
-                                <p><strong>Email:</strong> {{ inscricao.aluno.email }}</p>
-                                <p><strong>Endereço:</strong> {{ inscricao.aluno.bairro }}, {{ inscricao.aluno.municipio }}, {{ inscricao.aluno.provincia }}</p>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6 class="fw-bold">Informações Pessoais</h6>
+                                        <ul class="list-group list-group-flush mb-3">
+                                            <li class="list-group-item">
+                                                <strong>Curso:</strong> {{ inscricao.curso }}
+                                            </li>
+                                            <li class="list-group-item">
+                                                <strong>Média Final:</strong> {{ inscricao.aluno.media_final }}
+                                            </li>
+                                            <li class="list-group-item">
+                                                <strong>Idade:</strong> {{ ano_atual - inscricao.aluno.data_nascimento.year }} anos
+                                            </li>
+                                            <li class="list-group-item">
+                                                <strong>Telefone:</strong> {{ inscricao.aluno.telefone }}
+                                            </li>
+                                            <li class="list-group-item">
+                                                <strong>Email:</strong> {{ inscricao.aluno.email }}
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="fw-bold">Endereço</h6>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item">
+                                                <strong>Bairro:</strong> {{ inscricao.aluno.bairro }}
+                                            </li>
+                                            <li class="list-group-item">
+                                                <strong>Município:</strong> {{ inscricao.aluno.municipio }}
+                                            </li>
+                                            <li class="list-group-item">
+                                                <strong>Província:</strong> {{ inscricao.aluno.provincia }}
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
 
                                 <!-- Documentos -->
-                                <h5>Documentos</h5>
-                                <div class="d-flex flex-wrap">
-                                    {% if inscricao.aluno.frente_bilhete_path %}
-                                    <a href="{{ url_for('static', filename=inscricao.aluno.frente_bilhete_path) }}" target="_blank">
-                                        <img src="{{ url_for('static', filename=inscricao.aluno.frente_bilhete_path) }}" class="img-thumbnail me-2" style="max-width: 150px;">
-                                    </a>
-                                    {% endif %}
-                                    {% if inscricao.aluno.verso_bilhete_path %}
-                                    <a href="{{ url_for('static', filename=inscricao.aluno.verso_bilhete_path) }}" target="_blank">
-                                        <img src="{{ url_for('static', filename=inscricao.aluno.verso_bilhete_path) }}" class="img-thumbnail me-2" style="max-width: 150px;">
-                                    </a>
-                                    {% endif %}
-                                    {% if inscricao.aluno.certificado_path %}
-                                    <a href="{{ url_for('static', filename=inscricao.aluno.certificado_path) }}" target="_blank">
-                                        <img src="{{ url_for('static', filename=inscricao.aluno.certificado_path) }}" class="img-thumbnail me-2" style="max-width: 150px;">
-                                    </a>
-                                    {% endif %}
+                                <div class="mt-4">
+                                    <h6 class="fw-bold border-bottom pb-2">Documentos</h6>
+                                    <div class="d-flex flex-wrap gap-2 mt-3">
+                                        {% if inscricao.aluno.frente_bilhete_path %}
+                                        <div class="document-thumbnail">
+                                            <a href="{{ inscricao.aluno.frente_bilhete_path }}" target="_blank" class="text-decoration-none">
+                                                <div class="card">
+                                                    <img src="{{ inscricao.aluno.frente_bilhete_path }}" class="card-img-top" style="height: 120px; object-fit: cover;">
+                                                    <div class="card-body p-2 text-center">
+                                                        <small class="text-muted">Frente do Bilhete</small>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </div>
+                                        {% endif %}
+
+                                        {% if inscricao.aluno.verso_bilhete_path %}
+                                        <div class="document-thumbnail">
+                                            <a href="{{ inscricao.aluno.verso_bilhete_path }}" target="_blank" class="text-decoration-none">
+                                                <div class="card">
+                                                    <img src="{{ inscricao.aluno.verso_bilhete_path }}" class="card-img-top" style="height: 120px; object-fit: cover;">
+                                                    <div class="card-body p-2 text-center">
+                                                        <small class="text-muted">Verso do Bilhete</small>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </div>
+                                        {% endif %}
+
+                                        {% if inscricao.aluno.certificado_path %}
+                                        <div class="document-thumbnail">
+                                            <a href="{{ inscricao.aluno.certificado_path }}" target="_blank" class="text-decoration-none">
+                                                <div class="card">
+                                                    <img src="{{ inscricao.aluno.certificado_path }}" class="card-img-top" style="height: 120px; object-fit: cover;">
+                                                    <div class="card-body p-2 text-center">
+                                                        <small class="text-muted">Certificado</small>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </div>
+                                        {% endif %}
+                                    </div>
                                 </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="bi bi-x-lg me-1"></i> Fechar
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Modal de Mensagem -->
-                <!-- Modal de Mensagem -->
-                <div class="modal fade" id="modalMensagem{{ inscricao.id }}" tabindex="-1" aria-labelledby="modalMensagemLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
+                <div class="modal fade" id="modalMensagem{{ inscricao.id }}" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+                    <div class="modal-dialog">
                         <div class="modal-content">
-                            <form method="POST" action="{{ url_for('atualizar_inscricao', inscricao_id=inscricao.id) }}">
+                            <form id="formMensagem{{ inscricao.id }}" method="POST" action="{{ url_for('atualizar_inscricao', inscricao_id=inscricao.id) }}">
                                 <div class="modal-header bg-primary text-white">
-                                    <h5 class="modal-title">Enviar Mensagem para {{ inscricao.aluno.nome_completo }}</h5>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    <h5 class="modal-title">Enviar Mensagem</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" id="closeModal{{ inscricao.id }}"></button>
                                 </div>
                                 <div class="modal-body">
                                     <input type="hidden" name="acao" value="mensagem">
                                     <div class="mb-3">
-                                        <label for="mensagem{{ inscricao.id }}" class="form-label fw-bold">Mensagem:</label>
-                                        <textarea name="mensagem" id="mensagem{{ inscricao.id }}" class="form-control" rows="6" required
-                                                  placeholder="Digite sua mensagem aqui..."></textarea>
+                                        <textarea name="mensagem" class="form-control" rows="5" required></textarea>
                                     </div>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="bi bi-send-fill me-2"></i> Enviar Mensagem
-                                    </button>
+                                    <button type="submit" class="btn btn-primary">Enviar</button>
                                 </div>
                             </form>
                         </div>
@@ -525,17 +632,6 @@
             <h1>Perfil</h1>
             <p>Configurações da conta.</p>
 
-            <!-- Flash Messages
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show mt-3" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %} -->
 
             <!-- Formulário de Edição de Perfil -->
             <form method="POST" action="{{ url_for('funcionario_editar_perfil') }}">
@@ -627,7 +723,72 @@
                 });
             });
         });
-    </script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fecha o modal atual e abre outro quando clicar no botão de mensagem dentro do modal de detalhes
+            document.querySelectorAll('[data-bs-dismiss="modal"][data-bs-toggle="modal"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetModal = this.getAttribute('data-bs-target');
+                    const currentModal = this.closest('.modal');
+
+                    // Fecha o modal atual
+                    bootstrap.Modal.getInstance(currentModal).hide();
+
+                    // Abre o novo modal após um pequeno delay
+                    setTimeout(() => {
+                        const modal = new bootstrap.Modal(document.querySelector(targetModal));
+                        modal.show();
+                    }, 300);
+                });
+            });
+        });
+    document.addEventListener('DOMContentLoaded', function() {
+        // Função para resetar os modais
+        function resetModal(modalId) {
+            const modal = document.getElementById(modalId);
+            const form = modal.querySelector('form');
+
+            // Resetar o formulário
+            if(form) form.reset();
+
+            // Remover classes de erro
+            const inputs = modal.querySelectorAll('.is-invalid');
+            inputs.forEach(input => input.classList.remove('is-invalid'));
+        }
+
+        // Evento quando o modal de mensagem é fechado
+        document.querySelectorAll('[data-bs-target^="#modalMensagem"]').forEach(button => {
+            const modalId = button.getAttribute('data-bs-target');
+            const modal = document.querySelector(modalId);
+
+            modal.addEventListener('hidden.bs.modal', function () {
+                resetModal(modalId);
+            });
+        });
+
+        // Evento para o botão de fechar (X)
+        document.querySelectorAll('[id^="closeModal"]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const modal = this.closest('.modal');
+                resetModal(modal.id);
+            });
+        });
+
+        // Evento quando o modal é aberto via botão no modal de aluno
+        document.querySelectorAll('[data-bs-dismiss="modal"][data-bs-toggle="modal"]').forEach(button => {
+            button.addEventListener('click', function() {
+                const targetModal = this.getAttribute('data-bs-target');
+                const currentModal = this.closest('.modal');
+
+                bootstrap.Modal.getInstance(currentModal).hide();
+
+                setTimeout(() => {
+                    const modal = new bootstrap.Modal(document.querySelector(targetModal));
+                    modal.show();
+                }, 300);
+            });
+        });
+    });
+</script>
 </body>
 
 </html>
