@@ -516,15 +516,19 @@
                         <h5 class="mb-0">Adicionar Novo Funcionário</h5>
                     </div>
                     <div class="card-body">
-                        <form method="POST" action="{{ url_for('criar_funcionario') }}">
+                        <form method="POST" action="{{ url_for('criar_funcionario') }}" onsubmit="return validarFormularioFuncionario()" class="needs-validation" novalidate>
                             <div class="mb-3">
-                                <label class="form-label">Nome Completo:</label>
-                                <input type="text" class="form-control" name="nome_completo" required>
+                                <label class="form-label">Nome Completo*</label>
+                                <input type="text" class="form-control" name="nome_completo"
+                                       pattern="[A-Za-zÀ-ÿ\s]{5,}" required>
+                                <div class="invalid-feedback">Por favor, insira um nome válido (mínimo 5 caracteres, apenas letras e espaços).</div>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Email:</label>
-                                <input type="email" class="form-control" name="email" required>
+                                <label class="form-label">Email*</label>
+                                <input type="email" class="form-control" name="email"
+                                       pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" required>
+                                <div class="invalid-feedback">Por favor, insira um email válido (exemplo: nome@dominio.com).</div>
                             </div>
 
                             <div class="mb-3">
@@ -534,16 +538,20 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Telefone:</label>
-                                <input type="text" class="form-control" name="telefone">
+                                <label class="form-label">Telefone*</label>
+                                <input type="text" class="form-control" name="telefone"
+                                       pattern="9[1-9][0-9]{7}" required>
+                                <div class="invalid-feedback">Formato inválido (exemplo: 921234567).</div>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Permissão:</label>
+                                <label class="form-label">Permissão*</label>
                                 <select class="form-select" name="permissao" required>
+                                    <option value="" selected disabled>Selecione uma permissão</option>
                                     <option value="padrao">Padrão</option>
                                     <option value="master">Master</option>
                                 </select>
+                                <div class="invalid-feedback">Por favor, selecione um nível de permissão.</div>
                             </div>
 
                             <button type="submit" class="btn btn-success">Criar Funcionário</button>
@@ -788,6 +796,30 @@
             });
         });
     });
+        // Validação do formulário de funcionário
+        function validarFormularioFuncionario() {
+            const form = document.querySelector('form.needs-validation');
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+                form.classList.add('was-validated');
+                return false;
+            }
+            return true;
+        }
+
+        // Validação em tempo real
+        document.querySelectorAll('input, select').forEach(element => {
+            element.addEventListener('input', function() {
+                if (this.checkValidity()) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                } else {
+                    this.classList.remove('is-valid');
+                    this.classList.add('is-invalid');
+                }
+            });
+        });
 </script>
 </body>
 

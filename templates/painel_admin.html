@@ -239,69 +239,98 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <form action="{{ url_for('atualizar_aluno', aluno_id=aluno.id) }}" method="POST">
+                                <form action="{{ url_for('atualizar_aluno', aluno_id=aluno.id) }}" method="POST" onsubmit="return validarFormulario()">
                                     <div class="mb-3">
-                                        <label for="nome_completo" class="form-label">Nome Completo</label>
-                                        <input type="text" class="form-control" name="nome_completo" value="{{ aluno.nome_completo }}"  pattern="[A-Za-zÀ-ÿ\s]+">
+                                        <label for="nome_completo" class="form-label">Nome Completo*</label>
+                                        <input type="text" class="form-control" name="nome_completo" value="{{ aluno.nome_completo }}" pattern="[A-Za-zÀ-ÿ\s]{5,}" required>
+                                        <div class="invalid-feedback">Por favor, insira um nome válido (mínimo 5 caracteres, apenas letras e espaços).</div>
                                     </div>
+
                                     <div class="mb-3">
-                                        <label for="data_nascimento" class="form-label">Data de Nascimento</label>
-                                        <input type="date" class="form-control" name="data_nascimento" value="{{ aluno.data_nascimento }}" min="1938-01-01" max="2012-12-31">
+                                        <label for="data_nascimento" class="form-label">Data de Nascimento*</label>
+                                        <input type="date" class="form-control" name="data_nascimento" value="{{ aluno.data_nascimento }}" min="1938-01-01" max="2012-12-31" required>
+                                        <div class="invalid-feedback">Data de nascimento deve estar entre 1938 e 2012.</div>
                                     </div>
+
                                     <div class="mb-3">
-                                        <label for="numero_bilhete" class="form-label">Número do Bilhete</label>
-                                        <input type="text" class="form-control" name="numero_bilhete" value="{{ aluno.numero_bilhete }}" pattern="\d{9}[A-Za-z]{2}\d{3}">
+                                        <label for="numero_bilhete" class="form-label">Número do Bilhete*</label>
+                                        <input type="text" class="form-control" name="numero_bilhete" value="{{ aluno.numero_bilhete }}" pattern="\d{9}[A-Za-z]{2}\d{3}" required>
+                                        <div class="invalid-feedback">Formato inválido (exemplo correto: 123456789LA123).</div>
                                     </div>
+
                                     <div class="mb-3">
-                                        <label for="genero" class="form-label">Gênero</label>
-                                        <select class="form-control" name="genero">
+                                        <label for="genero" class="form-label">Gênero*</label>
+                                        <select class="form-control" name="genero" required>
+                                            <option value="">Selecione...</option>
                                             <option value="Masculino" {% if aluno.genero == 'Masculino' %}selected{% endif %}>Masculino</option>
                                             <option value="Feminino" {% if aluno.genero == 'Feminino' %}selected{% endif %}>Feminino</option>
                                         </select>
+                                        <div class="invalid-feedback">Por favor, selecione um gênero.</div>
                                     </div>
+
                                     <div class="mb-3">
-                                        <label for="email" class="form-label">Email</label>
-                                        <input type="email" class="form-control" name="email" value="{{ aluno.email }}">
+                                        <label for="email" class="form-label">Email*</label>
+                                        <input type="email" class="form-control" name="email" value="{{ aluno.email }}" required>
+                                        <div class="invalid-feedback">Por favor, insira um email válido.</div>
                                     </div>
+
                                     <div class="mb-3">
                                         <label for="senha" class="form-label">Senha</label>
-                                        <input type="password" class="form-control" name="senha" placeholder="Digite uma nova senha, se quiser alterar">
+                                        <input type="password" class="form-control" name="senha" placeholder="Digite uma nova senha, se quiser alterar" minlength="6">
+                                        <div class="invalid-feedback">A senha deve ter pelo menos 6 caracteres.</div>
                                     </div>
+
                                     <div class="mb-3">
-                                        <label for="instituicao_9_classe" class="form-label">Instituição 9ª Classe</label>
-                                        <input type="text" class="form-control" name="instituicao_9_classe" value="{{ aluno.instituicao_9_classe }}">
+                                        <label for="instituicao_9_classe" class="form-label">Instituição 9ª Classe*</label>
+                                        <input type="text" class="form-control" name="instituicao_9_classe" value="{{ aluno.instituicao_9_classe }}" required>
+                                        <div class="invalid-feedback">Por favor, informe a instituição.</div>
                                     </div>
+
                                     <div class="mb-3">
-                                        <label for="ano_conclusao" class="form-label">Ano de Conclusão</label>
-                                        <input type="text" class="form-control" name="ano_conclusao" value="{{ aluno.ano_conclusao }}" min="2000" max="2025">
+                                        <label for="ano_conclusao" class="form-label">Ano de Conclusão*</label>
+                                        <input type="number" class="form-control" name="ano_conclusao" value="{{ aluno.ano_conclusao }}" min="2000" max="2025" required>
+                                        <div class="invalid-feedback">Ano deve estar entre 2000 e 2025.</div>
                                     </div>
+
                                     <div class="mb-3">
-                                        <label for="media_final" class="form-label">Média Final</label>
-                                        <input type="text" class="form-control" name="media_final" value="{{ aluno.media_final }}" min="0" max="20">
+                                        <label for="media_final" class="form-label">Média Final*</label>
+                                        <input type="number" class="form-control" name="media_final" value="{{ aluno.media_final }}" min="0" max="20" step="0.1" required>
+                                        <div class="invalid-feedback">Média deve estar entre 0 e 20.</div>
                                     </div>
+
                                     <div class="mb-3">
-                                        <label for="turno_preferido" class="form-label">Turno Preferido</label>
+                                        <label for="turno_preferido" class="form-label">Turno Preferido*</label>
                                         <select class="form-select" id="turno_preferido" name="turno_preferido" required>
+                                            <option value="">Selecione...</option>
                                             <option value="manha" {% if aluno.turno == 'manha' %}selected{% endif %}>Manhã</option>
                                             <option value="tarde" {% if aluno.turno == 'tarde' %}selected{% endif %}>Tarde</option>
                                             <option value="noite" {% if aluno.turno == 'noite' %}selected{% endif %}>Noite</option>
                                         </select>
+                                        <div class="invalid-feedback">Por favor, selecione um turno.</div>
                                     </div>
+
                                     <div class="mb-3">
-                                        <label for="telefone" class="form-label">Telefone</label>
-                                        <input type="text" class="form-control" name="telefone" value="{{ aluno.telefone }}" pattern="9[1-9][0-9]{7}">
+                                        <label for="telefone" class="form-label">Telefone*</label>
+                                        <input type="text" class="form-control" name="telefone" value="{{ aluno.telefone }}" pattern="9[1-9][0-9]{7}" required>
+                                        <div class="invalid-feedback">Formato inválido (exemplo: 921234567).</div>
                                     </div>
+
                                     <div class="mb-3">
-                                        <label for="municipio" class="form-label">Município</label>
-                                        <input type="text" class="form-control" name="municipio" value="{{ aluno.municipio }}">
+                                        <label for="municipio" class="form-label">Município*</label>
+                                        <input type="text" class="form-control" name="municipio" value="{{ aluno.municipio }}" required>
+                                        <div class="invalid-feedback">Por favor, informe o município.</div>
                                     </div>
+
                                     <div class="mb-3">
-                                        <label for="bairro" class="form-label">Bairro</label>
-                                        <input type="text" class="form-control" name="bairro" value="{{ aluno.bairro }}">
+                                        <label for="bairro" class="form-label">Bairro*</label>
+                                        <input type="text" class="form-control" name="bairro" value="{{ aluno.bairro }}" required>
+                                        <div class="invalid-feedback">Por favor, informe o bairro.</div>
                                     </div>
+
                                     <div class="mb-3">
-                                        <label for="provincia" class="form-label">Província</label>
+                                        <label for="provincia" class="form-label">Província*</label>
                                         <select class="form-select" id="provincia" name="provincia" required>
+                                            <option value="">Selecione...</option>
                                             <option value="bengo" {% if aluno.provincia == 'bengo' %}selected{% endif %}>Bengo</option>
                                             <option value="benguela" {% if aluno.provincia == 'benguela' %}selected{% endif %}>Benguela</option>
                                             <option value="bie" {% if aluno.provincia == 'bie' %}selected{% endif %}>Bié</option>
@@ -324,12 +353,11 @@
                                             <option value="uige" {% if aluno.provincia == 'uige' %}selected{% endif %}>Uíge</option>
                                             <option value="zaire" {% if aluno.provincia == 'zaire' %}selected{% endif %}>Zaire</option>
                                         </select>
-
-
+                                        <div class="invalid-feedback">Por favor, selecione uma província.</div>
                                     </div>
+
                                     <button type="submit" class="btn btn-success">Salvar Alterações</button>
                                 </form>
-
                                 <form action="{{ url_for('deletar_aluno', aluno_id=aluno.id) }}" method="POST" style="display:inline;">
                                     <button type="submit" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja excluir este aluno?')">
                                         Excluir
@@ -579,6 +607,29 @@
             button.innerText = 'Ver Mais';
         }
     }
+    // Função para validar o formulário antes do envio
+function validarFormulario() {
+    const form = document.querySelector('form');
+    if (!form.checkValidity()) {
+        // Mostra mensagens de erro para campos inválidos
+        form.classList.add('was-validated');
+        return false;
+    }
+    return true;
+}
+
+    // Validação em tempo real para cada campo
+    document.querySelectorAll('input, select').forEach(element => {
+        element.addEventListener('input', function() {
+            if (this.checkValidity()) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            } else {
+                this.classList.remove('is-valid');
+                this.classList.add('is-invalid');
+            }
+        });
+    });
     </script>
 </body>
 
