@@ -545,7 +545,8 @@ def portal_estudante():
     inscricoes = aluno.inscricoes_rel  # Alterado de 'inscricoes' para 'inscricoes_rel'
 
     # Busca todas as escolas disponíveis
-    escolas = Instituicao.query.all()
+    # escolas = Instituicao.query.all()
+    escolas = Instituicao.query.filter_by(status="ativo").all()
 
     return render_template(
         'portal_estudante.html',
