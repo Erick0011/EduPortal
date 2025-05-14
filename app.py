@@ -14,32 +14,29 @@ from fpdf import FPDF
 import os
 
 
-# My app setup
 app = Flask(__name__)
 app.secret_key = 'uma_chave_secreta_e_unica_aqui'
-# Usando SQLite
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///edu_portal.db'
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg'}
-# Inicializando Flask-Login
+
 login_manager = LoginManager()
 login_manager.init_app(app)
-# Redireciona para esta rota ao acessar página protegida
+
 login_manager.login_view = 'login'
 login_manager.login_message = "Por favor, faça login para acessar esta página."
 
-# Inicializando o banco de dados
+
 db = SQLAlchemy(app)
 
-# config do faker
+
 faker = Faker('pt_PT')
 
-# Função para verificar se a extensão do arquivo é permitida
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 
-# Modelo para armazenar os dados do aluno
 class Aluno(UserMixin, db.Model):
     __tablename__ = 'aluno'
     id = db.Column(db.Integer, primary_key=True)
@@ -59,17 +56,12 @@ class Aluno(UserMixin, db.Model):
     provincia = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     tipo = db.Column(db.String(50), default="aluno", nullable=False)
-
-    # Relacionamento com Inscricao
     inscricoes = db.relationship('Inscricao', backref='aluno_rel', lazy=True)
-
-    # Campos para armazenar os caminhos dos documentos
     frente_bilhete_path = db.Column(db.String(255), nullable=True)
     verso_bilhete_path = db.Column(db.String(255), nullable=True)
     certificado_path = db.Column(db.String(255), nullable=True)
 
 
-#  Instituicao
 class Instituicao(UserMixin, db.Model):
     __tablename__ = 'instituicao'
     id = db.Column(db.Integer, primary_key=True)
@@ -88,11 +80,8 @@ class Instituicao(UserMixin, db.Model):
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     inscricoes = db.relationship('Inscricao', backref='instituicao_rel', lazy=True)
     cursos = db.Column(db.String(1000), nullable=True, default="")
-
-
     numero_vagas = db.Column(db.Integer, nullable=True)
 
-    # Relacionamento com a tabela Funcionario
     funcionarios = db.relationship(
         'Funcionario', backref='instituicao', lazy=True)
 
@@ -121,7 +110,6 @@ class Funcionario(UserMixin, db.Model):
         return f'<Funcionario {self.nome} - {self.cargo}>'
 
 
-# Admin
 class Admin(UserMixin, db.Model):
     __tablename__ = 'admin'
     id = db.Column(db.Integer, primary_key=True)
@@ -131,7 +119,6 @@ class Admin(UserMixin, db.Model):
     senha = db.Column(db.String(256), nullable=False)
 
 
-# logs do sitema
 class Log(db.Model):
     __tablename__ = 'logs'
     id = db.Column(db.Integer, primary_key=True)
@@ -146,7 +133,7 @@ class Log(db.Model):
     def __repr__(self):
         return f'<Log {self.id} - {self.tipo} - {self.tipo_usuario} - {self.usuario_id}>'
 
-# funcao add log
+
 def adicionar_log(mensagem, tipo='informação', usuario=None, tipo_usuario='desconecido'):
     novo_log = Log(mensagem=mensagem, tipo=tipo, tipo_usuario=tipo_usuario)
 
@@ -188,7 +175,6 @@ class Inscricao(db.Model):
     data_atualizacao = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     mensagem_instituicao = db.Column(db.Text, nullable=True)
 
-    # Relacionamentos
     aluno = db.relationship('Aluno', backref='inscricoes_rel', lazy=True)
     instituicao = db.relationship('Instituicao', backref='inscricoes_rel', lazy=True)
 
@@ -215,7 +201,7 @@ class Mensagem(db.Model):
 
 @login_manager.user_loader
 def load_user(user_id):
-    # Recupera o tipo do usuário na sessão
+
     user_type = session.get('user_type')
 
     if user_type == "aluno":
@@ -227,28 +213,22 @@ def load_user(user_id):
 
     return None
 
-# Decorador para Administradores
+
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if current_user.tipo != 'admin':
-            flash(
-                {'titulo': 'Acesso negado!',
-                 'corpo': 'Você não tem permissão para acessar esta página.'})
-            return redirect(url_for('index'))  # Redireciona se não for admin
+            flash('Acesso negado! Você não tem permissão para acessar esta página.', 'error')
+            return redirect(url_for('index'))
         return f(*args, **kwargs)
     return decorated_function
-
-# Decorador para Instituições
 
 
 def funcionario_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if session.get("user_type") != "funcionario":
-            flash(
-                {'titulo': 'Acesso negado!',
-                 'corpo': ' Somente fúncionarios de instituições podem acessar esta página.'})
+            flash('Acesso negado! Somente fúncionarios de instituições podem acessar esta página.','error')
             return redirect(url_for("index"))
         return f(*args, **kwargs)
     return decorated_function
@@ -260,9 +240,7 @@ def aluno_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if session.get("user_type") != "aluno":
-            flash(
-                {'titulo': 'Acesso negado!',
-                 'corpo': ' Somente alunos podem acessar esta página.'})
+            flash('Acesso negado! Somente alunos podem acessar esta página.', 'error')
             return redirect(url_for("index"))
         return f(*args, **kwargs)
     return decorated_function
