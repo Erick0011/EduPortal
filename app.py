@@ -233,8 +233,6 @@ def funcionario_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# Decorador para Alunos
-
 
 def aluno_required(f):
     @wraps(f)
@@ -253,18 +251,17 @@ def index():
 
 @app.route('/enviar_mensagem', methods=['POST'])
 def enviar_mensagem():
-    tipo = request.form.get("tipo")  # "suporte" ou "contato"
+    tipo = request.form.get("tipo")
 
-    # Se o usuário estiver logado, preenche automaticamente os dados
     if current_user.is_authenticated:
         nome = current_user.nome_completo
         email = current_user.email
-        tipo_usuario = current_user.tipo  # 'aluno' ou 'funcionario'
+        tipo_usuario = current_user.tipo
         usuario_id = current_user.id
     else:
         nome = request.form.get("nome")
         email = request.form.get("email")
-        tipo_usuario = "visitante"  # Para usuários não autenticados
+        tipo_usuario = "visitante"
         usuario_id = 0
 
     mensagem_texto = request.form.get("mensagem")
@@ -273,7 +270,7 @@ def enviar_mensagem():
         flash("A mensagem não pode estar vazia.", "error")
         return redirect(request.referrer or url_for('index'))
 
-    # Criar e salvar a mensagem no banco de dados
+
     nova_mensagem = Mensagem(
         nome=nome,
         email=email,
@@ -296,7 +293,7 @@ def cadastro():
         try:
             nome_completo = request.form['nomeCompleto']
 
-            # Validação para data de nascimento
+
             try:
                 data_nascimento = datetime.strptime(
                     request.form['dataNascimento'], '%Y-%m-%d').date()
@@ -306,7 +303,7 @@ def cadastro():
                               tipo_usuario='aluno')
                 return redirect(url_for('cadastro'))
 
-            # Coletar outros dados do formulário Preencha
+
             numero_bilhete = request.form['numeroBilhete'].capitalize()
             genero = request.form['genero'].capitalize()
             email = request.form['email']
@@ -320,10 +317,10 @@ def cadastro():
             bairro = request.form['bairro'].capitalize()
             provincia = request.form['provincia'].capitalize()
 
-            # Hash da senha para segurança
+
             senha_hash = generate_password_hash(senha)
 
-            # Salvar os dados no banco
+
             novo_aluno = Aluno(
                 nome_completo=nome_completo,
                 data_nascimento=data_nascimento,
@@ -378,14 +375,14 @@ def cadastro():
     return render_template('cadastro.html')
 
 
-# Rota para a página de upload
+
 @app.route('/upload/<user_id>', methods=['GET', 'POST'])
 @login_required
 @aluno_required
 def upload(user_id):
     if request.method == 'POST':
         try:
-            # Verificar se os arquivos foram enviados
+
             if 'frente_bilhete' not in request.files or 'verso_bilhete' not in request.files or 'certificado' not in request.files:
                 flash('Erro: Faltam arquivos! Por favor, envie todos os arquivos solicitados.', 'error')
                 adicionar_log(f'Erro no upload: Faltam arquivos para o aluno {current_user.nome_completo}.',
