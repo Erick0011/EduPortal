@@ -1,0 +1,51 @@
+{% extends "base_txt.html" %}
+
+{% block titulo %}
+Como Funciona o EduPortal para Alunos
+{% endblock %}
+
+{% block conteudo %}
+<div class="container mt-5">
+    <!-- Título da Página -->
+    <h1 class="text-azul text-center mb-4">Como Funciona o EduPortal para Alunos</h1>
+
+    <!-- Seção: Requisitos -->
+    <section class="mb-5">
+        <h2 class="text-laranja">O que você precisa para se inscrever</h2>
+        <p>Antes de iniciar sua inscrição, tenha em mãos:</p>
+        <ul>
+            <li>Documento de Identificação (BI, Passaporte ou equivalente);</li>
+            <li>Foto tipo passe (formato digital);</li>
+            <li>Certificado do 1º Ciclo do Ensino Médio (9ª Classe).</li>
+        </ul>
+    </section>
+
+    <!-- Seção: Processo de Inscrição -->
+    <section class="mb-5">
+        <h2 class="text-laranja">Como se Inscrever</h2>
+        <p>O processo é simples:</p>
+        <ol>
+            <li>Escolha a escola desejada abaixo;</li>
+            <li>Selecione o curso desejado da instituição;</li>
+            <li>Preencha os dados e envie os documentos necessários;</li>
+            <li>Acompanhe o estado da sua inscrição pela plataforma;</li>
+            <li>Se for aceito, baixe o Certificado de Aceitação e siga as instruções da escola.</li>
+        </ol>
+    </section>
+
+    <!-- Seção: Escolas e Cursos -->
+    <section class="mb-5">
+        <h2 class="text-laranja">Escolas Disponíveis</h2>
+        {% for escola in escolas %}
+        <div class="card mb-3 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title text-azul">{{ escola.nome_instituicao }}</h5>
+                <p><strong>Cursos:</strong> {{ escola.cursos.split(',') | join(', ') }}</p>
+                <p><strong>Cidade:</strong> {{ escola.cidade }} | <strong>Província:</strong> {{ escola.provincia }}</p>
+
+            </div>
+        </div>
+        {% endfor %}
+    </section>
+</div>
+{% endblock %}

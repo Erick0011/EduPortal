@@ -702,24 +702,28 @@ def criar_inscricao():
 @login_required
 @aluno_required
 def cancelar_inscricao(inscricao_id):
-    # Busca a inscrição do aluno logado que está com status 'Pendente'
+
+    if not inscricao:
+        flash('Inscrição não encontrada ou não pode ser cancelada.', 'danger')
+        return redirect(url_for('portal_estudante') + '#inscricoes')
+
     inscricao = Inscricao.query.filter_by(
         id=inscricao_id,
         aluno_id=current_user.id,
         status='Pendente'
     ).first()
 
-    if not inscricao:
-        flash('Inscrição não encontrada ou não pode ser cancelada.', 'danger')
-        return redirect(url_for('portal_estudante') + '#inscricoes')
 
-    # Deleta a inscrição do banco de dados
+
+
+    adicionar_log(f"Inscrição cancelada: {inscricao.curso} na instituição {inscricao.instituicao.nome_instituicao} por {current_user.nome_completo}",
+                  tipo='cancelamento', usuario=current_user, tipo_usuario='aluno')
+
+
     db.session.delete(inscricao)
     db.session.commit()
 
-    # Registra o cancelamento no log
-    adicionar_log(f"Inscrição cancelada: {inscricao.curso} na instituição {inscricao.instituicao.nome_instituicao} por {current_user.nome_completo}",
-                  tipo='cancelamento', usuario=current_user, tipo_usuario='aluno')
+
 
     flash('Inscrição cancelada com sucesso.', 'success')
     return redirect(url_for('portal_estudante') + '#inscricoes')
@@ -1380,7 +1384,10 @@ def editar_instituicao(instituicao_id):
 def instituicoes():
     return render_template('txt_instituicoes.html')
 
-
+@app.route("/como-funciona-alunos")
+def como_funciona_alunos():
+    escolas = Instituicao.query.filter_by(status="ativo").all()
+    return render_template("como_funciona_alunos.html", escolas=escolas)
 
 @app.route('/instituicoes/interesse', methods=['GET', 'POST'])
 def interesse():
