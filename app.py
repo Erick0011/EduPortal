@@ -703,17 +703,15 @@ def criar_inscricao():
 @aluno_required
 def cancelar_inscricao(inscricao_id):
 
-    if not inscricao:
-        flash('Inscrição não encontrada ou não pode ser cancelada.', 'danger')
-        return redirect(url_for('portal_estudante') + '#inscricoes')
-
     inscricao = Inscricao.query.filter_by(
         id=inscricao_id,
         aluno_id=current_user.id,
         status='Pendente'
     ).first()
 
-
+    if not inscricao:
+        flash('Inscrição não encontrada ou não pode ser cancelada.', 'danger')
+        return redirect(url_for('portal_estudante') + '#inscricoes')
 
 
     adicionar_log(f"Inscrição cancelada: {inscricao.curso} na instituição {inscricao.instituicao.nome_instituicao} por {current_user.nome_completo}",
