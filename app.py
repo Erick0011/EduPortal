@@ -1242,12 +1242,12 @@ def funcionario_editar_perfil():
     nova_senha = request.form.get('nova_senha')
     confirmar_senha = request.form.get('confirmar_senha')
 
-    # Verifica se o email já pertence a outro usuário
+
     if Funcionario.query.filter(Funcionario.email == email, Funcionario.id != current_user.id).first():
         flash("Este email já está em uso.", "danger")
         return redirect(url_for('portal_instituicao'))
 
-    # Verifica quais informações foram alteradas para registrar no log
+
     alteracoes = []
 
     if current_user.email != email:
@@ -1258,7 +1258,7 @@ def funcionario_editar_perfil():
         alteracoes.append(f"Telefone alterado de {current_user.telefone} para {telefone}")
         current_user.telefone = telefone
 
-    # Se a senha foi fornecida, verifica e altera
+
     if nova_senha:
         if nova_senha != confirmar_senha:
             flash("As senhas não coincidem.", "danger")
@@ -1271,10 +1271,10 @@ def funcionario_editar_perfil():
         current_user.senha = generate_password_hash(nova_senha)
         alteracoes.append("Senha alterada.")
 
-    # Salvar mudanças no banco de dados
+
     db.session.commit()
 
-    # Se houver alterações, registrar no log
+
     if alteracoes:
         mensagem_log = f"O funcionário '{current_user.nome_completo}' atualizou o perfil: " + "; ".join(alteracoes)
         adicionar_log(mensagem_log, tipo="atualização", usuario=current_user, tipo_usuario="funcionario")
@@ -1302,7 +1302,7 @@ def remover_funcionario(funcionario_id):
     db.session.delete(funcionario)
     db.session.commit()
 
-    # Adiciona log da remoção
+
     mensagem_log = f"O funcionário '{nome_funcionario}' foi removido da instituição '{current_user.instituicao.nome_instituicao}' por {current_user.nome_completo}."
     adicionar_log(mensagem_log, tipo="remoção", usuario=current_user, tipo_usuario="admin")
 
@@ -1320,7 +1320,7 @@ def editar_instituicao(instituicao_id):
 
     instituicao = Instituicao.query.get_or_404(instituicao_id)
 
-    # Captura os dados antigos para comparação
+
     dados_antigos = {
         "nome_instituicao": instituicao.nome_instituicao,
         "email": instituicao.email,
@@ -1334,7 +1334,7 @@ def editar_instituicao(instituicao_id):
         "cursos": instituicao.cursos,
     }
 
-    # Atualiza os dados da instituição
+
     instituicao.nome_instituicao = request.form.get('nome_instituicao')
     instituicao.email = request.form.get('email')
     instituicao.endereco = request.form.get('endereco')
@@ -1362,7 +1362,7 @@ def editar_instituicao(instituicao_id):
         "cursos": instituicao.cursos,
     }
 
-    # Verifica quais dados foram alterados e adiciona ao log
+
     alteracoes = []
     for campo, valor_antigo in dados_antigos.items():
         valor_novo = dados_novos[campo]
@@ -1390,7 +1390,7 @@ def interesse():
         email = request.form['email']
         telefone = request.form['telefone']
 
-        # Salva o interesse no banco de dados
+
         novo_interesse = InteresseInstituicao(
             nome_instituicao=nome_instituicao,
             nome_responsavel=nome_responsavel,
@@ -1400,29 +1400,29 @@ def interesse():
         db.session.add(novo_interesse)
         db.session.commit()
 
-        # Adiciona log do cadastro de interesse
+
         adicionar_log(
             mensagem=f'Novo interesse cadastrado: {nome_instituicao} - Responsável: {nome_responsavel} - Telefone: {telefone}',
             tipo='informação',
             tipo_usuario='instituicao'
         )
 
-        # Diretório para salvar os documentos
+
         upload_folder = os.path.join(
             app.config['UPLOAD_FOLDER'], str(novo_interesse.id))
         os.makedirs(upload_folder, exist_ok=True)
 
-        # Salvar e renomear os documentos
+
         for file in request.files.getlist('documentos'):
             if file and file.filename.endswith('.pdf'):
-                # Renomeia com o nome da instituição e um índice para evitar conflitos
+
                 index = request.files.getlist('documentos').index(file) + 1
                 nome_limpo = nome_instituicao.replace(' ', '_').lower()
                 novo_nome = f"{nome_limpo}_{index}.pdf"
                 caminho_arquivo = os.path.join(upload_folder, novo_nome)
                 file.save(caminho_arquivo)
 
-                # Salva as informações no banco de dados
+
                 novo_documento = Documento(
                     nome_arquivo=novo_nome,
                     caminho_arquivo=caminho_arquivo,
@@ -1430,7 +1430,7 @@ def interesse():
                 )
                 db.session.add(novo_documento)
 
-                # Adiciona log do documento salvo
+
                 adicionar_log(
                     mensagem=f'Documento salvo: {novo_nome} para {nome_instituicao}',
                     tipo='informação',
@@ -1450,7 +1450,7 @@ def interesse():
 @login_required
 def baixar_documento(interesse_id, arquivo):
     try:
-        # Define o diretório base usando o interesse_id
+
         directory = os.path.join('static', 'uploads', str(interesse_id))
         return send_from_directory(directory=directory, path=arquivo, as_attachment=True)
     except FileNotFoundError:
@@ -1490,7 +1490,7 @@ def remover_interesse(id):
 def criar_instituicao():
     if request.method == 'POST':
         nome_instituicao = request.form['nome_instituicao']
-        email_instituicao = request.form['email_instituicao']  # Capturando o email corretamente
+        email_instituicao = request.form['email_instituicao']
         nome_master = request.form['nome_master']
         email_master = request.form['email_master']
         telefone_master = request.form['telefone_master']
@@ -1498,16 +1498,16 @@ def criar_instituicao():
         senha_hash = generate_password_hash(senha_padrao)
 
         try:
-            # Criar a instituição com todos os campos obrigatórios
+
             instituicao = Instituicao(
                 nome_instituicao=nome_instituicao,
-                email=email_instituicao,  # Passando o email corretamente
-                status="ativo",  # Se necessário
+                email=email_instituicao,
+                status="ativo",
                 created_at=datetime.utcnow(),
                 data_atualizacao=datetime.utcnow()
             )
             db.session.add(instituicao)
-            db.session.commit()  # Confirmando para obter o ID
+            db.session.commit()
             adicionar_log(
                 mensagem=f"Instituição '{nome_instituicao}' criada com sucesso.",
                 tipo='informação',
@@ -1515,10 +1515,10 @@ def criar_instituicao():
                 tipo_usuario='admin'
             )
 
-            # Criar o Funcionário Master
+
             master = Funcionario(
                 nome_completo=nome_master,
-                email=email_master,  # Email do funcionário master
+                email=email_master,
                 senha=senha_hash,
                 telefone=telefone_master,
                 permissao='master',
@@ -1537,7 +1537,7 @@ def criar_instituicao():
             return redirect(url_for('painel_admin') + '#criar-instituicoes')
 
         except Exception as e:
-            db.session.rollback()  # Se der erro, desfaz as alterações
+            db.session.rollback()
             adicionar_log(
                 mensagem=f"Erro ao criar instituição ou funcionário master: {str(e)}",
                 tipo='erro',
@@ -1565,7 +1565,7 @@ def criar_funcionario():
     telefone = request.form.get('telefone', '')
     permissao = request.form['permissao']
 
-    # Verifica se o email já existe
+
     if Funcionario.query.filter_by(email=email).first():
         flash("Já existe um funcionário com este email!", "danger")
         return redirect(url_for('portal_instituicao'))
@@ -1578,7 +1578,7 @@ def criar_funcionario():
         senha=senha_hash,
         telefone=telefone,
         permissao=permissao,
-        instituicao_id=current_user.instituicao_id  # Define a instituição do Master
+        instituicao_id=current_user.instituicao_id
     )
 
     db.session.add(novo_funcionario)
@@ -1587,14 +1587,14 @@ def criar_funcionario():
     adicionar_log(mensagem_log, tipo="criação", usuario=current_user, tipo_usuario="Funcionario-master")
     flash("Funcionário criado com sucesso!", "success")
     return redirect(url_for('portal_instituicao'))
-# Debug
+
 
 
 def criar_aluno_aleatorio():
     nome_completo = faker.name()
     data_nascimento = faker.date_of_birth(minimum_age=15, maximum_age=20)
 
-    # Número do bilhete: 9 números + 2 letras + 3 números
+
     numeros_iniciais = faker.random_number(digits=9, fix_len=True)
     letras = faker.random_uppercase_letter() + faker.random_uppercase_letter()
     numeros_finais = faker.random_number(digits=3, fix_len=True)
@@ -1602,14 +1602,14 @@ def criar_aluno_aleatorio():
 
     genero = faker.random_element(elements=('Masculino', 'Feminino'))
     email = faker.unique.email()
-    senha = generate_password_hash('12345')  # Senha padrão com hash
+    senha = generate_password_hash('12345')
     instituicao_9_classe = faker.company()
     ano_conclusao = faker.random_int(min=2000, max=2025)
     media_final = round(faker.pyfloat(min_value=10.0, max_value=20.0), 2)
     turno_preferido = faker.random_element(
         elements=('Manhã', 'Tarde', 'Noite'))
 
-    # Telefone: 9 dígitos começando com 9
+
     telefone = f"9{faker.random_number(digits=8, fix_len=True)}"
 
     provincias = [
@@ -1622,7 +1622,7 @@ def criar_aluno_aleatorio():
     provincia = faker.random_element(
         elements=provincias)
 
-    # Criação do objeto Aluno
+
     novo_aluno = Aluno(
         nome_completo=nome_completo,
         data_nascimento=data_nascimento,
@@ -1634,17 +1634,17 @@ def criar_aluno_aleatorio():
         ano_conclusao=ano_conclusao,
         media_final=media_final,
         turno_preferido=turno_preferido,
-        telefone=telefone,  # Agora com o formato correto
+        telefone=telefone,
         municipio=municipio,
         bairro=bairro,
         provincia=provincia
     )
 
-    # Adiciona ao banco de dados
+
     db.session.add(novo_aluno)
     db.session.commit()
 
-    return  # Retorna o nome do aluno criado para exibir como feedback
+    return
 
 
 def criar_instituicao_aleatoria():
@@ -1654,22 +1654,22 @@ def criar_instituicao_aleatoria():
 
     nome_master = faker.name()
     email_master = faker.unique.email()
-    senha_master = "12345"  # Pode ser gerada dinamicamente
+    senha_master = "12345"
     senha_hash = generate_password_hash(senha_master)
     telefone_master = f"9{faker.random_number(digits=8, fix_len=True)}"
 
-    # Verifica se já existe um funcionário com esse email
+
     if Funcionario.query.filter_by(email=email_master).first():
         flash("Erro ao gerar instituição: email do master já existe!", "danger")
         return
 
-    # Criar a instituição
+
     instituicao = Instituicao(
         nome_instituicao=nome_instituicao,
         email=email_instituicao
     )
     db.session.add(instituicao)
-    db.session.commit()  # Para obter o ID da instituição
+    db.session.commit()
 
     # Criar o funcionário Master
     master = Funcionario(
@@ -1707,11 +1707,11 @@ def debug():
 
 @app.route('/debug_action/<int:action_id>', methods=['POST'])
 def debug_action(action_id):
-    # Obtém o nome da ação baseado no ID
+
     action_name = debug_buttons[action_id - 1]
     flash(f"debug: Ação {action_name} executada com sucesso!", "success")
 
-    # Aqui você pode adicionar a lógica específica para cada ação
+
     if action_id == 1:
         # Criar um novo admin
         novo_admin = Admin(
@@ -1746,12 +1746,12 @@ def debug_action(action_id):
 @app.route('/logout', methods=['POST'])
 @login_required
 def logout():
-    # Registrar o log de logout
+
     mensagem = f'O usuário {current_user.nome_completo} fez logout'
     adicionar_log(mensagem=mensagem, tipo='informação',
                   usuario=current_user, tipo_usuario='aluno')
 
-    # Realizar o logout
+
     logout_user()
 
 
