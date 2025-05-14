@@ -341,11 +341,15 @@ def cadastro():
             db.session.add(novo_aluno)
             db.session.commit()
 
-            flash('Cadastro realizado com sucesso! Faça login para continuar.', 'success')
-            adicionar_log(f'Novo aluno cadastrado: {novo_aluno.nome_completo}',
+            login_user(novo_aluno)
+            session['user_type'] = 'aluno'
+
+            adicionar_log(f'Novo aluno cadastrado e logado: {novo_aluno.nome_completo}',
                           tipo='informação', usuario=novo_aluno, tipo_usuario='aluno')
 
-            return redirect(url_for('login'))
+            flash('Cadastro e login realizados com sucesso!', 'success')
+            return redirect(url_for('portal_estudante'))
+
 
         except IntegrityError as e:
             db.session.rollback()
