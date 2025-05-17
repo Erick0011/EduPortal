@@ -218,7 +218,7 @@ def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if current_user.tipo != 'admin':
-            flash('Acesso negado! Você não tem permissão para acessar esta página.', 'error')
+            flash('Acesso negado! Você não tem permissão para acessar esta página.', 'danger')
             return redirect(url_for('index'))
         return f(*args, **kwargs)
     return decorated_function
@@ -228,7 +228,7 @@ def funcionario_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if session.get("user_type") != "funcionario":
-            flash('Acesso negado! Somente fúncionarios de instituições podem acessar esta página.','error')
+            flash('Acesso negado! Somente fúncionarios de instituições podem acessar esta página.','danger')
             return redirect(url_for("index"))
         return f(*args, **kwargs)
     return decorated_function
@@ -238,11 +238,40 @@ def aluno_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if session.get("user_type") != "aluno":
-            flash('Acesso negado! Somente alunos podem acessar esta página.', 'error')
+            flash('Acesso negado! Somente alunos podem acessar esta página.', 'danger')
             return redirect(url_for("index"))
         return f(*args, **kwargs)
     return decorated_function
 
+
+def verificar_email_unico(email, tipo_usuario, usuario=None):
+
+    usuario_aluno = Aluno.query.filter_by(email=email).first()
+    if usuario_aluno:
+        
+        adicionar_log(f"Tentativa de cadastro com e-mail {email} já registrado como aluno.", tipo='erro',
+                      usuario=usuario_aluno, tipo_usuario='aluno')
+        flash("Este email já está registrado. Por favor, use outro email.", "danger")
+        return False
+
+    usuario_funcionario = Funcionario.query.filter_by(email=email).first()
+    if usuario_funcionario:
+
+        adicionar_log(f"Tentativa de cadastro com e-mail {email} já registrado como funcionário.", tipo='erro',
+                      usuario=usuario_funcionario, tipo_usuario='funcionario')
+        flash("Este email já está registrado. Por favor, use outro email.", "danger")
+        return False
+
+    usuario_instituicao = Instituicao.query.filter_by(email=email).first()
+    if usuario_instituicao:
+        # Adicionar o log usando a sua função
+        adicionar_log(f"Tentativa de cadastro com e-mail {email} já registrado como instituição.", tipo='erro',
+                      usuario=usuario_instituicao, tipo_usuario='instituicao')
+        flash("Este email já está registrado. Por favor, use outro email.", "danger")
+        return False
+
+
+    return True
 
 @app.route("/")
 def index():
@@ -267,7 +296,7 @@ def enviar_mensagem():
     mensagem_texto = request.form.get("mensagem")
 
     if not mensagem_texto.strip():
-        flash("A mensagem não pode estar vazia.", "error")
+        flash("A mensagem não pode estar vazia.", "danger")
         return redirect(request.referrer or url_for('index'))
 
 
@@ -365,13 +394,13 @@ def cadastro():
             else:
                 corpo_mensagem = f"Erro no banco de dados: {mensagem}"
 
-            flash(f'Erro no cadastro: {corpo_mensagem}', 'error')
+            flash(f'Erro no cadastro: {corpo_mensagem}', 'danger')
             adicionar_log(f'Erro de banco de dados ao cadastrar aluno: {corpo_mensagem}',
                           tipo='erro', usuario=None, tipo_usuario='aluno')
             return redirect(url_for('cadastro'))
 
         except Exception as e:
-            flash(f'Erro inesperado: {str(e)}', 'error')
+            flash(f'Erro inesperado: {str(e)}', 'danger')
             adicionar_log(f'Erro inesperado ao cadastrar aluno: {str(e)}',
                           tipo='erro', usuario=None, tipo_usuario='aluno')
             return redirect(url_for('cadastro'))
@@ -388,7 +417,7 @@ def upload(user_id):
         try:
 
             if 'frente_bilhete' not in request.files or 'verso_bilhete' not in request.files or 'certificado' not in request.files:
-                flash('Erro: Faltam arquivos! Por favor, envie todos os arquivos solicitados.', 'error')
+                flash('Erro: Faltam arquivos! Por favor, envie todos os arquivos solicitados.', 'danger')
                 adicionar_log(f'Erro no upload: Faltam arquivos para o aluno {current_user.nome_completo}.',
                               tipo='erro', usuario=current_user, tipo_usuario='aluno')
                 return redirect(url_for('upload', user_id=user_id))
@@ -425,13 +454,13 @@ def upload(user_id):
                 return redirect(url_for('portal_estudante', aluno=current_user))
 
             else:
-                flash('Erro: Formato de arquivo inválido! Certifique-se de que os arquivos são do tipo permitido.', 'error')
+                flash('Erro: Formato de arquivo inválido! Certifique-se de que os arquivos são do tipo permitido.', 'danger')
                 adicionar_log(f'Erro no upload: Formato de arquivo inválido para o aluno {current_user.nome_completo}.',
                               tipo='erro', usuario=current_user, tipo_usuario='aluno')
                 return redirect(url_for('upload', user_id=user_id))
 
         except Exception as e:
-            flash(f'Erro: Erro inesperado ao processar o upload: {str(e)}', 'error')
+            flash(f'Erro: Erro inesperado ao processar o upload: {str(e)}', 'danger')
             adicionar_log(f'Erro inesperado ao tentar fazer upload de documentos para o aluno {current_user.nome_completo}: {str(e)}.',
                           tipo='erro', usuario=current_user, tipo_usuario='aluno')
             return redirect(url_for('upload', user_id=user_id))
@@ -449,7 +478,7 @@ def login():
         senha = request.form.get('password')
 
         if not email or not senha:
-            flash('Preencha todos os campos!', 'error')
+            flash('Preencha todos os campos!', 'danger')
             return render_template('login.html')
 
         # Verifica nas três tabelas
