@@ -248,7 +248,7 @@ def verificar_email_unico(email, tipo_usuario, usuario=None):
 
     usuario_aluno = Aluno.query.filter_by(email=email).first()
     if usuario_aluno:
-        
+
         adicionar_log(f"Tentativa de cadastro com e-mail {email} já registrado como aluno.", tipo='erro',
                       usuario=usuario_aluno, tipo_usuario='aluno')
         flash("Este email já está registrado. Por favor, use outro email.", "danger")
@@ -321,8 +321,6 @@ def cadastro():
     if request.method == 'POST':
         try:
             nome_completo = request.form['nomeCompleto']
-
-
             try:
                 data_nascimento = datetime.strptime(
                     request.form['dataNascimento'], '%Y-%m-%d').date()
@@ -331,7 +329,6 @@ def cadastro():
                 adicionar_log('Data de nascimento inválida! Use o formato AAAA-MM-DD.', tipo='erro',
                               tipo_usuario='aluno')
                 return redirect(url_for('cadastro'))
-
 
             numero_bilhete = request.form['numeroBilhete'].capitalize()
             genero = request.form['genero'].capitalize()
@@ -348,7 +345,8 @@ def cadastro():
 
 
             senha_hash = generate_password_hash(senha)
-
+            if not verificar_email_unico(email, tipo_usuario="aluno"):
+                return redirect(url_for('cadastro'))
 
             novo_aluno = Aluno(
                 nome_completo=nome_completo,
@@ -911,11 +909,22 @@ def buscar_alunos():
 def atualizar_aluno(aluno_id):
     aluno = Aluno.query.filter_by(id=aluno_id).first_or_404()
 
+
+    novo_email = request.form['email']
+    email_atual = aluno.email
+
+
+    if novo_email != email_atual:
+
+        if not verificar_email_unico(novo_email, tipo_usuario="Admin"):
+            flash("Este e-mail já está em uso. Por favor, escolha outro.", "error")
+            return redirect(url_for('painel_admin') + '#alunos')
+
     try:
         aluno.nome_completo = request.form['nome_completo']
         aluno.numero_bilhete = request.form['numero_bilhete'].capitalize()
         aluno.genero = request.form['genero']
-        aluno.email = request.form['email']
+        aluno.email = novo_email
         aluno.instituicao_9_classe = request.form['instituicao_9_classe']
         aluno.ano_conclusao = request.form['ano_conclusao']
         aluno.media_final = request.form['media_final']
@@ -924,6 +933,9 @@ def atualizar_aluno(aluno_id):
         aluno.municipio = request.form['municipio']
         aluno.bairro = request.form['bairro']
         aluno.provincia = request.form['provincia']
+
+
+
 
         # Atualizar data de nascimento
         try:
@@ -1599,10 +1611,9 @@ def criar_funcionario():
     telefone = request.form.get('telefone', '')
     permissao = request.form['permissao']
 
-
-    if Funcionario.query.filter_by(email=email).first():
-        flash("Já existe um funcionário com este email!", "danger")
+    if not verificar_email_unico(email, tipo_usuario="funcionario"):
         return redirect(url_for('portal_instituicao'))
+
 
 
 
